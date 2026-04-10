@@ -1,38 +1,53 @@
 import { type LucideIcon, TrendingUp, TrendingDown } from 'lucide-react'
 
+export type CardColor =
+  | 'blue' | 'teal' | 'indigo' | 'green'
+  | 'amber' | 'red' | 'purple' | 'emerald'
+  | 'orange' | 'cyan'
+
 interface StatCardProps {
   label: string
   value: string | number
   trend?: { value: number; direction: 'up' | 'down'; label: string }
   variant?: 'default' | 'warning' | 'danger' | 'success'
+  color?: CardColor
   icon?: LucideIcon
   onClick?: () => void
 }
 
-const variantStyles = {
-  default: 'border-gray-200',
-  warning: 'border-amber-300 bg-amber-50',
-  danger: 'border-red-300 bg-red-50',
-  success: 'border-green-300 bg-green-50',
+const colorStyles: Record<CardColor, { border: string; iconBg: string }> = {
+  blue:    { border: 'border-t-blue-500',    iconBg: 'bg-blue-500' },
+  teal:    { border: 'border-t-teal-500',    iconBg: 'bg-teal-500' },
+  indigo:  { border: 'border-t-indigo-500',  iconBg: 'bg-indigo-500' },
+  green:   { border: 'border-t-green-500',   iconBg: 'bg-green-500' },
+  amber:   { border: 'border-t-amber-400',   iconBg: 'bg-amber-400' },
+  red:     { border: 'border-t-red-500',     iconBg: 'bg-red-500' },
+  purple:  { border: 'border-t-purple-500',  iconBg: 'bg-purple-500' },
+  emerald: { border: 'border-t-emerald-500', iconBg: 'bg-emerald-500' },
+  orange:  { border: 'border-t-orange-500',  iconBg: 'bg-orange-500' },
+  cyan:    { border: 'border-t-cyan-500',    iconBg: 'bg-cyan-500' },
 }
 
-const valueStyles = {
-  default: 'text-gray-900',
-  warning: 'text-amber-700',
-  danger: 'text-red-700',
-  success: 'text-green-700',
+const variantToColor: Record<string, CardColor> = {
+  default: 'blue',
+  success: 'green',
+  warning: 'amber',
+  danger:  'red',
 }
 
-export function StatCard({ label, value, trend, variant = 'default', icon: Icon, onClick }: StatCardProps) {
+export function StatCard({ label, value, trend, variant = 'default', color, icon: Icon, onClick }: StatCardProps) {
+  const resolvedColor = color ?? variantToColor[variant]
+  const { border, iconBg } = colorStyles[resolvedColor]
+
   return (
     <div
-      className={`bg-white rounded-xl border p-6 ${variantStyles[variant]} ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+      className={`bg-white rounded-xl border border-gray-200 border-t-4 ${border} p-5 shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500">{label}</p>
-          <p className={`mt-2 text-3xl font-bold ${valueStyles[variant]}`}>{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
           {trend && (
             <div className="mt-2 flex items-center gap-1">
               {trend.direction === 'up' ? (
@@ -48,8 +63,8 @@ export function StatCard({ label, value, trend, variant = 'default', icon: Icon,
           )}
         </div>
         {Icon && (
-          <div className="rounded-lg bg-blue-50 p-2">
-            <Icon className="h-6 w-6 text-blue-600" />
+          <div className={`rounded-lg p-2.5 ${iconBg}`}>
+            <Icon className="h-5 w-5 text-white" />
           </div>
         )}
       </div>

@@ -1,45 +1,45 @@
-import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
-import { Heart, Loader2, GitBranch } from 'lucide-react'
-import { useAuthStore } from '../../store/authStore'
-import { type UserRole, roleLabels, users } from '../../data/users'
+import { useState } from "react";
+import { Navigate } from "react-router-dom";
+import { Loader2, GitBranch } from "lucide-react";
+import logo from "../../assets/logo.png";
+import { useAuthStore } from "../../store/authStore";
+import { type UserRole, roleLabels, users } from "../../data/users";
 
 export function LoginPage() {
-  const { isAuthenticated, login } = useAuthStore()
-  const [selectedRole, setSelectedRole] = useState<UserRole>('care_coordinator')
-  const [isLoading, setIsLoading] = useState(false)
+  const { isAuthenticated, login } = useAuthStore();
+  const [selectedRole, setSelectedRole] =
+    useState<UserRole>("care_coordinator");
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
-  const selectedUser = users.find((u) => u.role === selectedRole)
+  const selectedUser = users.find((u) => u.role === selectedRole);
 
   const handleLogin = async () => {
-    setIsLoading(true)
-    await new Promise((r) => setTimeout(r, 1000))
-    login(selectedRole)
-    setIsLoading(false)
-  }
+    setIsLoading(true);
+    await new Promise((r) => setTimeout(r, 1000));
+    login(selectedRole);
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
-            <Heart className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">CarePortal</h1>
-            <p className="text-xs text-gray-500">Healthcare Back-Office</p>
-          </div>
+        <div className="flex justify-center mb-8">
+          <img src={logo} alt="RxCEI" className="h-28 object-contain" />
         </div>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-        <p className="text-sm text-gray-500 mb-6">Select your role to continue</p>
+        <p className="text-sm text-gray-500 mb-6">
+          Select your role to continue
+        </p>
 
         {/* Role Selector */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Sign in as</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Sign in as
+          </label>
           <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value as UserRole)}
@@ -60,7 +60,9 @@ export function LoginPage() {
               {selectedUser.avatar}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">{selectedUser.name}</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {selectedUser.name}
+              </p>
               <p className="text-xs text-gray-500">{selectedUser.email}</p>
               <p className="text-xs text-blue-600">{selectedUser.department}</p>
             </div>
@@ -78,7 +80,7 @@ export function LoginPage() {
           ) : (
             <GitBranch className="h-4 w-4" />
           )}
-          {isLoading ? 'Authenticating...' : 'Sign in with OpenFn'}
+          {isLoading ? "Authenticating..." : "Sign in with OpenFn"}
         </button>
 
         <p className="mt-4 text-xs text-center text-gray-400">
@@ -86,5 +88,5 @@ export function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

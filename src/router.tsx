@@ -28,6 +28,7 @@ import { ClaimsPage } from './pages/claims/ClaimsPage'
 import { ReportsPage } from './pages/reports/ReportsPage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { OpenFnMonitorPage } from './pages/admin/OpenFnMonitorPage'
+import { CareGapsPage } from './pages/careGaps/CareGapsPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
       { path: 'providers', element: <ProviderDirectoryPage /> },
       { path: 'claims', element: <ClaimsPage /> },
       { path: 'reports', element: <ReportsPage /> },
+      { path: 'care-gaps', element: <CareGapsPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'admin/openfn', element: <OpenFnMonitorPage /> },
     ],

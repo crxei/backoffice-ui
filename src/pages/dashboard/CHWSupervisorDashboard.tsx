@@ -45,10 +45,10 @@ export function CHWSupervisorDashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Active Visits Now" value={activeNow.length} icon={MapPin} variant={activeNow.length > 0 ? 'success' : 'default'} />
-        <StatCard label="Overdue Check-outs" value={overdueCheckouts.length} icon={Clock} variant={overdueCheckouts.length > 0 ? 'danger' : 'default'} />
-        <StatCard label="Completions Today" value={completedToday.length} icon={CheckSquare} variant="success" />
-        <StatCard label="Open Escalations" value={openEscalations.length} icon={AlertTriangle} variant={openEscalations.length > 0 ? 'danger' : 'default'} />
+        <StatCard label="Active Visits Now" value={activeNow.length} icon={MapPin} color="teal" />
+        <StatCard label="Overdue Check-outs" value={overdueCheckouts.length} icon={Clock} color={overdueCheckouts.length > 0 ? 'red' : 'blue'} />
+        <StatCard label="Completions Today" value={completedToday.length} icon={CheckSquare} color="green" />
+        <StatCard label="Open Escalations" value={openEscalations.length} icon={AlertTriangle} color={openEscalations.length > 0 ? 'orange' : 'blue'} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -60,9 +60,9 @@ export function ClinicalDashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Pending Approvals" value={pendingApprovals.length} icon={ClipboardList} variant={pendingApprovals.length > 0 ? 'warning' : 'default'} />
-        <StatCard label="Active CDS Alerts" value={activeCDSAlerts.length} icon={Zap} variant={activeCDSAlerts.length > 0 ? 'danger' : 'success'} />
-        <StatCard label="High Risk Patients" value={highRiskPatients.length} icon={Flag} variant="warning" />
+        <StatCard label="Pending Approvals" value={pendingApprovals.length} icon={ClipboardList} color="amber" />
+        <StatCard label="Active CDS Alerts" value={activeCDSAlerts.length} icon={Zap} color={activeCDSAlerts.length > 0 ? 'red' : 'green'} />
+        <StatCard label="High Risk Patients" value={highRiskPatients.length} icon={Flag} color="orange" />
       </div>
 
       {/* Care Plans Awaiting Approval */}
