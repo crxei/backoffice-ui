@@ -51,12 +51,12 @@ const navItems: NavItem[] = [
     icon: TrendingUp,
     roles: ["care_coordinator", "chw_supervisor", "admin"],
   },
-  // {
-  //   to: "/referrals",
-  //   label: "Referrals",
-  //   icon: ArrowRightLeft,
-  //   roles: ["care_coordinator", "admin"],
-  // },
+  {
+    to: "/referrals",
+    label: "Referrals",
+    icon: ArrowRightLeft,
+    roles: ["care_coordinator", "admin"],
+  },
   {
     to: "/consent",
     label: "Consent Management",
