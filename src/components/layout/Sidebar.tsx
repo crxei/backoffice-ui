@@ -51,12 +51,12 @@ const navItems: NavItem[] = [
     icon: TrendingUp,
     roles: ["care_coordinator", "chw_supervisor", "admin"],
   },
-  {
-    to: "/referrals",
-    label: "Referrals",
-    icon: ArrowRightLeft,
-    roles: ["care_coordinator", "admin"],
-  },
+  // {
+  //   to: "/referrals",
+  //   label: "Referrals",
+  //   icon: ArrowRightLeft,
+  //   roles: ["care_coordinator", "admin"],
+  // },
   {
     to: "/consent",
     label: "Consent Management",
@@ -69,18 +69,18 @@ const navItems: NavItem[] = [
     icon: Bell,
     roles: ["care_coordinator", "admin"],
   },
-  {
-    to: "/clinical",
-    label: "Clinical Data",
-    icon: Activity,
-    roles: ["clinician", "admin"],
-  },
-  {
-    to: "/clinical",
-    label: "CDS Alerts",
-    icon: Zap,
-    roles: ["clinician", "admin"],
-  },
+  // {
+  //   to: "/clinical",
+  //   label: "Clinical Data",
+  //   icon: Activity,
+  //   roles: ["clinician", "admin"],
+  // },
+  // {
+  //   to: "/clinical",
+  //   label: "CDS Alerts",
+  //   icon: Zap,
+  //   roles: ["clinician", "admin"],
+  // },
   {
     to: "/chw-visits",
     label: "CHW Field Visits",
