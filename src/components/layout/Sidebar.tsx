@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
+  Headphones,
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 import { useAuthStore } from "../../store/authStore";
@@ -121,6 +122,12 @@ const navItems: NavItem[] = [
     label: "AI Voice Outreach",
     icon: Phone,
     roles: ["admin"],
+  },
+  {
+    to: "/ringcentral",
+    label: "Human Outreach",
+    icon: Headphones,
+    roles: ["admin", "care_coordinator"],
   },
   { to: "/reports", label: "Reports", icon: BarChart2, roles: ["admin"] },
   {

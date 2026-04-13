@@ -29,6 +29,7 @@ import { ReportsPage } from './pages/reports/ReportsPage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { OpenFnMonitorPage } from './pages/admin/OpenFnMonitorPage'
 import { CareGapsPage } from './pages/careGaps/CareGapsPage'
+import { RingCentralPage } from './pages/ringcentral/RingCentralPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
       { path: 'claims', element: <ClaimsPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'care-gaps', element: <CareGapsPage /> },
+      { path: 'ringcentral', element: <RingCentralPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'admin/openfn', element: <OpenFnMonitorPage /> },
     ],
