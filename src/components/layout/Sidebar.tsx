@@ -83,7 +83,7 @@ const navItems: NavItem[] = [
   // },
   {
     to: "/chw-visits",
-    label: "CHW Field Visits",
+    label: "CSW Field Visits",
     icon: MapPin,
     roles: ["chw_supervisor", "admin"],
   },
