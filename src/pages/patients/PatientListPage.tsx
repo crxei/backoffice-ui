@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { differenceInYears, parseISO } from 'date-fns'
-import { Plus } from 'lucide-react'
+import { Plus, Users, Activity, Heart, Baby, AlertTriangle, Brain, Stethoscope } from 'lucide-react'
 import { usePatients } from '../../hooks/usePatients'
 import { PageHeader } from '../../components/shared/PageHeader'
 import { DataTable, type Column } from '../../components/shared/DataTable'
@@ -10,18 +10,109 @@ import { PageLoader } from '../../components/shared/LoadingSpinner'
 import { type Patient } from '../../data/patients'
 import { providers } from '../../data/providers'
 
+type TabId = 'all' | 'diabetes' | 'hypertension' | 'elderly' | 'pregnant' | 'high-risk' | 'mental-health'
+
+interface Tab {
+  id: TabId
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  color: string
+  filter: (p: Patient) => boolean
+}
+
+const hasCondition = (p: Patient, ...keywords: string[]) =>
+  p.conditions.some((c) => keywords.some((k) => c.toLowerCase().includes(k.toLowerCase())))
+
+const tabs: Tab[] = [
+  {
+    id: 'all',
+    label: 'All Patients',
+    icon: Users,
+    color: 'blue',
+    filter: () => true,
+  },
+  {
+    id: 'diabetes',
+    label: 'Diabetes',
+    icon: Activity,
+    color: 'amber',
+    filter: (p) => hasCondition(p, 'diabetes'),
+  },
+  {
+    id: 'hypertension',
+    label: 'Hypertension',
+    icon: Heart,
+    color: 'red',
+    filter: (p) => hasCondition(p, 'hypertension'),
+  },
+  {
+    id: 'elderly',
+    label: 'Elderly (65+)',
+    icon: Stethoscope,
+    color: 'teal',
+    filter: (p) => differenceInYears(new Date(), parseISO(p.dob)) >= 65,
+  },
+  {
+    id: 'pregnant',
+    label: 'Pregnant Women',
+    icon: Baby,
+    color: 'pink',
+    filter: (p) => hasCondition(p, 'pregnan', 'gestational'),
+  },
+  {
+    id: 'high-risk',
+    label: 'High-Risk Chronic',
+    icon: AlertTriangle,
+    color: 'orange',
+    filter: (p) => p.riskLevel === 'high',
+  },
+  {
+    id: 'mental-health',
+    label: 'Mental Health',
+    icon: Brain,
+    color: 'purple',
+    filter: (p) => hasCondition(p, 'depression', 'anxiety', 'bipolar', 'schizophrenia', 'ptsd', 'mental health'),
+  },
+]
+
+const tabActiveStyles: Record<string, string> = {
+  blue: 'border-blue-600 text-blue-700 bg-blue-50',
+  amber: 'border-amber-500 text-amber-700 bg-amber-50',
+  red: 'border-red-500 text-red-700 bg-red-50',
+  teal: 'border-teal-500 text-teal-700 bg-teal-50',
+  pink: 'border-pink-500 text-pink-700 bg-pink-50',
+  orange: 'border-orange-500 text-orange-700 bg-orange-50',
+  purple: 'border-purple-500 text-purple-700 bg-purple-50',
+}
+
+const tabBadgeStyles: Record<string, string> = {
+  blue: 'bg-blue-100 text-blue-700',
+  amber: 'bg-amber-100 text-amber-700',
+  red: 'bg-red-100 text-red-700',
+  teal: 'bg-teal-100 text-teal-700',
+  pink: 'bg-pink-100 text-pink-700',
+  orange: 'bg-orange-100 text-orange-700',
+  purple: 'bg-purple-100 text-purple-700',
+}
+
 export function PatientListPage() {
   const navigate = useNavigate()
   const { data: patients, isLoading } = usePatients()
+  const [activeTab, setActiveTab] = useState<TabId>('all')
   const [riskFilter, setRiskFilter] = useState('')
   const [payerFilter, setPayerFilter] = useState('')
   const [consentFilter, setConsentFilter] = useState('')
 
   if (isLoading) return <PageLoader />
 
-  const payers = [...new Set((patients ?? []).map((p) => p.insurance.payer))].sort()
+  const allPatients = patients ?? []
+  const payers = [...new Set(allPatients.map((p) => p.insurance.payer))].sort()
 
-  const filtered = (patients ?? []).filter((p) => {
+  const currentTab = tabs.find((t) => t.id === activeTab)!
+
+  const tabFiltered = allPatients.filter(currentTab.filter)
+
+  const filtered = tabFiltered.filter((p) => {
     if (riskFilter && p.riskLevel !== riskFilter) return false
     if (payerFilter && p.insurance.payer !== payerFilter) return false
     if (consentFilter && p.consentStatus !== consentFilter) return false
@@ -58,6 +149,27 @@ export function PatientListPage() {
     },
     { key: 'phone', header: 'Phone' },
     {
+      key: 'conditions',
+      header: 'Conditions',
+      render: (row) => {
+        const p = row as unknown as Patient
+        return (
+          <div className="flex flex-wrap gap-1">
+            {p.conditions.slice(0, 2).map((c) => (
+              <span key={c} className="inline-block px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                {c}
+              </span>
+            ))}
+            {p.conditions.length > 2 && (
+              <span className="inline-block px-1.5 py-0.5 text-xs bg-gray-100 text-gray-500 rounded">
+                +{p.conditions.length - 2}
+              </span>
+            )}
+          </div>
+        )
+      },
+    },
+    {
       key: 'insurance',
       header: 'Insurance',
       render: (row) => {
@@ -83,7 +195,7 @@ export function PatientListPage() {
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: '',
       render: (row) => (
         <button
           onClick={(e) => { e.stopPropagation(); navigate(`/patients/${(row as unknown as Patient).id}`) }}
@@ -101,7 +213,7 @@ export function PatientListPage() {
     <div>
       <PageHeader
         title="Patient Registry"
-        description={`${(patients ?? []).length} patients enrolled`}
+        description={`${allPatients.length} patients enrolled`}
         actions={
           <button
             onClick={() => navigate('/patients/new')}
@@ -112,6 +224,34 @@ export function PatientListPage() {
           </button>
         }
       />
+
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-1 mb-5 border-b border-gray-200">
+        {tabs.map((tab) => {
+          const count = allPatients.filter(tab.filter).length
+          const isActive = activeTab === tab.id
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setRiskFilter(''); setPayerFilter(''); setConsentFilter('') }}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
+                isActive
+                  ? tabActiveStyles[tab.color]
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {tab.label}
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                isActive ? tabBadgeStyles[tab.color] : 'bg-gray-100 text-gray-500'
+              }`}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
 
       <DataTable
         columns={columns}
