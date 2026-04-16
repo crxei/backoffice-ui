@@ -15,7 +15,6 @@ import {
   Headphones,
   BarChart2,
 } from "lucide-react";
-import { usePatients } from "../../hooks/usePatients";
 import { PageHeader } from "../../components/shared/PageHeader";
 import { StatCard } from "../../components/shared/StatCard";
 import { StatusBadge } from "../../components/shared/StatusBadge";
@@ -271,16 +270,12 @@ const agentStatus: Record<string, { color: string; label: string }> = {
 
 export function RingCentralPage() {
   const navigate = useNavigate();
-  const { data: patients } = usePatients();
+
   const [activeTab, setActiveTab] = useState<"queue" | "history" | "agents">(
     "queue",
   );
   const [queueItems, setQueueItems] = useState(agentQueue);
 
-  const getPatientName = (id: string) => {
-    const p = (patients ?? []).find((x) => x.id === id);
-    return p ? `${p.firstName} ${p.lastName}` : id;
-  };
 
   const handleDial = (item: (typeof agentQueue)[0]) => {
     setQueueItems((prev) =>
@@ -323,7 +318,7 @@ export function RingCentralPage() {
     <div className="space-y-6">
       <PageHeader
         title="Human Outreach — RingCentral"
-        subtitle="Agent-assisted patient communication for care gap closure, consent, and scheduling"
+        description="Agent-assisted patient communication for care gap closure, consent, and scheduling"
       />
 
       {/* Stat cards */}

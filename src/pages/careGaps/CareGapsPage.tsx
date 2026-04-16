@@ -129,7 +129,7 @@ export function CareGapsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Care Continuum Gaps"
-        subtitle="Identify and close missed activities across the patient care continuum"
+        description="Identify and close missed activities across the patient care continuum"
       />
 
       {/* Stat cards */}
