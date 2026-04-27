@@ -14,6 +14,9 @@ export interface Patient {
   consentStatus: 'active' | 'expired' | 'missing'
   enrollmentDate: string
   riskLevel: 'low' | 'medium' | 'high'
+  riskScore?: number
+  program?: string
+  journeyStage?: string
 }
 
 export const patients: Patient[] = [

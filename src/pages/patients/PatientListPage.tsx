@@ -106,7 +106,7 @@ export function PatientListPage() {
   if (isLoading) return <PageLoader />
 
   const allPatients = patients ?? []
-  const payers = [...new Set(allPatients.map((p) => p.insurance.payer))].sort()
+  const payers = [...new Set(allPatients.map((p) => p.insurance.payer).filter(Boolean))].sort()
 
   const currentTab = tabs.find((t) => t.id === activeTab)!
 
