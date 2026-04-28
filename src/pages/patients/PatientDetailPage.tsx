@@ -351,19 +351,33 @@ export function PatientDetailPage() {
           {detail.carePlans.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-6">No care plans</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {detail.carePlans.map((cp) => (
                 <div key={cp.id} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium text-gray-900">{cp.title}</p>
                     <StatusBadge status={cp.status} />
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {cp.goals.length} goals
-                    {cp.targetDate
-                      ? ` · Target: ${format(parseISO(cp.targetDate), "MMM d, yyyy")}`
-                      : ""}
-                  </p>
+                  {cp.protocol && (
+                    <p className="text-xs text-gray-500 mb-3">{cp.protocol}</p>
+                  )}
+                  {cp.goals.length > 0 && (
+                    <div className="space-y-2 mt-2">
+                      {cp.goals.map((goal) => (
+                        <div key={goal.id} className="p-3 bg-white rounded-lg border border-gray-200">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="text-xs text-gray-800 flex-1">{goal.description}</p>
+                            <StatusBadge status={goal.status} />
+                          </div>
+                          {goal.targetDate && (
+                            <p className="text-xs text-gray-400">
+                              Target: {format(parseISO(goal.targetDate), "MMM d, yyyy")}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

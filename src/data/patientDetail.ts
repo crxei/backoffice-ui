@@ -34,6 +34,7 @@ export interface PatientDetailCarePlanTask {
 export interface PatientDetailCarePlan {
   id: string
   title: string
+  protocol?: string
   status: 'draft' | 'pending_approval' | 'active' | 'completed' | 'archived'
   createdBy?: string
   assignedClinician?: string
