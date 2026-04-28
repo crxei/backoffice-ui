@@ -5,6 +5,8 @@ import {
   type PatientDetailCarePlan,
   type PatientDetailAppointment,
   type PatientDetailInsurance,
+  type PatientDetailCareGap,
+  type PatientDetailJourney,
 } from "../data/patientDetail";
 import { callOpenFn, postToOpenFn } from "./openFnClient";
 
@@ -207,12 +209,14 @@ interface ApiPatientDetailResponse {
   data: {
     patient: {
       identity: ApiDetailIdentity;
+      careGaps?: PatientDetailCareGap[];
       conditions?: ApiDetailCondition[];
       insurance?: ApiDetailInsurance[];
       carePlans?: ApiDetailCarePlan[];
       appointments?: ApiDetailAppointment[];
       careTeam?: ApiDetailCareTeamMember[];
       vitals?: ApiDetailVital[];
+      journey?: PatientDetailJourney;
       medications?: ApiDetailMedication[];
     };
   };
@@ -321,8 +325,8 @@ function mapApiPatientDetail(res: ApiPatientDetailResponse): PatientDetail {
       role: m.role,
       isPrimary: m.isPrimary ?? false,
     })),
-    careGaps: [],
-    journey: null,
+    careGaps: p.careGaps ?? [],
+    journey: p.journey ?? null,
     careProtocols: [],
     carePlans: (p.carePlans ?? []).map(mapDetailCarePlan),
     appointments: (p.appointments ?? []).map(mapDetailAppointment),

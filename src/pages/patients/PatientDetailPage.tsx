@@ -461,8 +461,8 @@ export function PatientDetailPage() {
                 </h3>
                 <div className="flex items-center gap-0 overflow-x-auto pb-2">
                   {STAGES.map((stage, i) => {
-                    const current = stageOrder[journey.stage];
-                    const isActive = stage.key === journey.stage;
+                    const current = stageOrder?.[journey?.stage ?? "intake"];
+                    const isActive = stage.key === journey?.stage;
                     const isDone = stageOrder[stage.key] < current;
                     const isFuture = stageOrder[stage.key] > current;
                     return (
@@ -512,22 +512,22 @@ export function PatientDetailPage() {
                         Adherence Score
                       </span>
                       <span
-                        className={`text-sm font-bold ${journey.adherenceScore >= 80 ? "text-green-600" : journey.adherenceScore >= 60 ? "text-yellow-600" : journey.adherenceScore >= 40 ? "text-orange-600" : "text-red-600"}`}
+                        className={`text-sm font-bold ${(journey?.adherenceScore ?? 0 >= 80) ? "text-green-600" : (journey?.adherenceScore ?? 0 >= 60) ? "text-yellow-600" : (journey?.adherenceScore ?? 0 >= 40) ? "text-orange-600" : "text-red-600"}`}
                       >
-                        {journey.adherenceScore}% —{" "}
-                        {adherenceLabel(journey.adherenceScore)}
+                        {journey?.adherenceScore ?? 0}% —{" "}
+                        {adherenceLabel(journey?.adherenceScore ?? 0)}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
-                        className={`h-2.5 rounded-full ${adherenceColor(journey.adherenceScore)}`}
-                        style={{ width: `${journey.adherenceScore}%` }}
+                        className={`h-2.5 rounded-full ${adherenceColor(journey?.adherenceScore ?? 0)}`}
+                        style={{ width: `${journey?.adherenceScore ?? 0}%` }}
                       />
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
-                      {journey.completedActivitiesLast30} of{" "}
-                      {journey.totalActivitiesLast30} activities completed in
-                      the last 30 days
+                      {journey?.completedActivitiesLast30 ?? 0} of{" "}
+                      {journey?.totalActivitiesLast30 ?? 0} activities completed
+                      in the last 30 days
                     </p>
                   </div>
                   <div className="pt-2 border-t border-gray-100">
@@ -536,12 +536,12 @@ export function PatientDetailPage() {
                     </p>
                     <div className="flex items-start gap-2">
                       <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey.nextActionTeam]}`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey?.nextActionTeam ?? "default"]}`}
                       >
-                        {journey.nextActionTeam.toUpperCase()}
+                        {journey?.nextActionTeam?.toUpperCase() ?? "DEFAULT"}
                       </span>
                       <p className="text-sm text-gray-800">
-                        {journey.nextAction}
+                        {journey?.nextAction ?? "No next action specified"}
                       </p>
                     </div>
                   </div>
@@ -549,27 +549,29 @@ export function PatientDetailPage() {
                     <div>
                       <p className="text-gray-500">Last Contact</p>
                       <p className="font-medium text-gray-900">
-                        {format(
-                          parseISO(journey.lastContactDate),
+                        {/* {format(
+                          parseISO(journey?.lastContactDate ?? ""),
                           "MMM d, yyyy",
-                        )}
+                        )} */}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Next Contact</p>
                       <p className="font-medium text-gray-900">
-                        {format(
-                          parseISO(journey.nextContactDate),
+                        {/* {format(
+                          parseISO(journey?.nextContactDate ?? ""),
                           "MMM d, yyyy",
-                        )}
+                        )} */}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Primary Team</p>
                       <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey.primaryTeam]}`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey?.primaryTeam ?? "default"]}`}
                       >
-                        {teamLabel[journey.primaryTeam]}
+                        {journey?.primaryTeam
+                          ? teamLabel[journey.primaryTeam]
+                          : "—"}
                       </span>
                     </div>
                     <div>
@@ -630,17 +632,22 @@ export function PatientDetailPage() {
                               <p className="text-xs text-gray-500 mt-0.5">
                                 {gap.protocolName}
                               </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {gap.description}
+                              </p>
                             </div>
-                            <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
-                              <Clock className="h-3 w-3" />
-                              {format(parseISO(gap.dueDate), "MMM d")}
-                            </div>
+                            {gap.dueDate && (
+                              <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                                <Clock className="h-3 w-3" />
+                                {format(parseISO(gap.dueDate), "MMM d")}
+                              </div>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 mt-1.5">
                             <span
                               className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${teamBadge[gap.assignedTeam]}`}
                             >
-                              {gap.assignedTeam.toUpperCase()}
+                              {gap.assignedTeam?.toUpperCase()}
                             </span>
                             {gap.estimatedRevenue && (
                               <span className="text-xs text-emerald-700">

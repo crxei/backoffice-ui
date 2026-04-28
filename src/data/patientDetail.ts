@@ -85,6 +85,7 @@ export interface PatientDetailCareGap {
   activityId?: string
   activityName: string
   activityType?: string
+  description?: string
   dueDate: string
   lastCompletedDate?: string | null
   status: 'upcoming' | 'overdue' | 'critical' | 'scheduled'
