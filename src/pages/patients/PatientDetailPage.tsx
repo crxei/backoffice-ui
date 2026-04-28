@@ -134,7 +134,9 @@ export function PatientDetailPage() {
               {(detail.address.city || detail.address.state) && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
-                  {[detail.address.city, detail.address.state].filter(Boolean).join(", ")}
+                  {[detail.address.city, detail.address.state]
+                    .filter(Boolean)
+                    .join(", ")}
                 </span>
               )}
             </div>
@@ -188,27 +190,47 @@ export function PatientDetailPage() {
 
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h3 className="font-semibold text-gray-900 mb-3">Insurance</h3>
-            {detail.insurance ? (
-              <dl className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">Payer</dt>
-                  <dd className="text-gray-900">{detail.insurance.payer}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">Plan</dt>
-                  <dd className="text-gray-900">{detail.insurance.plan}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">Member ID</dt>
-                  <dd className="text-gray-900">{detail.insurance.memberId}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">Group #</dt>
-                  <dd className="text-gray-900">{detail.insurance.groupNumber}</dd>
-                </div>
-              </dl>
+            {detail.insurance.length === 0 ? (
+              <p className="text-sm text-gray-400">
+                No insurance information available
+              </p>
             ) : (
-              <p className="text-sm text-gray-400">No insurance information available</p>
+              <div className="space-y-4">
+                {detail.insurance.map((ins) => (
+                  <dl key={ins.id} className="space-y-2 text-sm">
+                    {ins.type && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Type</dt>
+                        <dd className="text-gray-900">{ins.type}</dd>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <dt className="text-gray-500">Payer</dt>
+                      <dd className="text-gray-900">{ins.payer}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-gray-500">Plan</dt>
+                      <dd className="text-gray-900">{ins.plan}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-gray-500">Member ID</dt>
+                      <dd className="text-gray-900">{ins.memberId}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-gray-500">Group #</dt>
+                      <dd className="text-gray-900">{ins.groupNumber}</dd>
+                    </div>
+                    {ins.effectiveDate && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Effective</dt>
+                        <dd className="text-gray-900">
+                          {format(parseISO(ins.effectiveDate), "MMM d, yyyy")}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                ))}
+              </div>
             )}
           </div>
 
@@ -232,19 +254,34 @@ export function PatientDetailPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="font-semibold text-gray-900 mb-3">Primary Provider</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">
+              Primary Provider
+            </h3>
             {detail.primaryProvider ? (
               <div>
-                <p className="text-sm font-medium text-gray-900">{detail.primaryProvider.name}</p>
-                <p className="text-xs text-gray-500">{detail.primaryProvider.specialty}</p>
-                <p className="text-xs text-gray-500">{detail.primaryProvider.location}</p>
-                <p className="text-xs text-gray-500">{detail.primaryProvider.phone}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {detail.primaryProvider.name}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {detail.primaryProvider.specialty}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {detail.primaryProvider.location}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {detail.primaryProvider.phone}
+                </p>
               </div>
             ) : detail.careTeam.length > 0 ? (
               <div className="space-y-2">
                 {detail.careTeam.map((m) => (
-                  <div key={m.memberId} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-900">{m.memberName ?? m.memberId}</span>
+                  <div
+                    key={m.memberId}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-gray-900">
+                      {m.memberName ?? m.memberId}
+                    </span>
                     <span className="text-xs text-gray-500">{m.role}</span>
                   </div>
                 ))}
@@ -262,7 +299,9 @@ export function PatientDetailPage() {
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h3 className="font-semibold text-gray-900 mb-4">Recent Vitals</h3>
             {detail.vitals.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No vitals recorded</p>
+              <p className="text-sm text-gray-400 text-center py-6">
+                No vitals recorded
+              </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -288,15 +327,24 @@ export function PatientDetailPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">Current Medications</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">
+              Current Medications
+            </h3>
             {detail.medications.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No medications recorded</p>
+              <p className="text-sm text-gray-400 text-center py-6">
+                No medications recorded
+              </p>
             ) : (
               <div className="space-y-3">
                 {detail.medications.map((med, i) => (
-                  <div key={i} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={i}
+                    className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{med.name}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {med.name}
+                      </p>
                       <p className="text-xs text-gray-500">
                         {med.frequency} · Since {med.startDate}
                       </p>
@@ -315,7 +363,9 @@ export function PatientDetailPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h3 className="font-semibold text-gray-900 mb-4">Appointments</h3>
           {detail.appointments.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No appointments</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No appointments
+            </p>
           ) : (
             <div className="space-y-2">
               {detail.appointments
@@ -349,13 +399,17 @@ export function PatientDetailPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h3 className="font-semibold text-gray-900 mb-4">Care Plans</h3>
           {detail.carePlans.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No care plans</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No care plans
+            </p>
           ) : (
             <div className="space-y-4">
               {detail.carePlans.map((cp) => (
                 <div key={cp.id} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-gray-900">{cp.title}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {cp.title}
+                    </p>
                     <StatusBadge status={cp.status} />
                   </div>
                   {cp.protocol && (
@@ -364,14 +418,20 @@ export function PatientDetailPage() {
                   {cp.goals.length > 0 && (
                     <div className="space-y-2 mt-2">
                       {cp.goals.map((goal) => (
-                        <div key={goal.id} className="p-3 bg-white rounded-lg border border-gray-200">
+                        <div
+                          key={goal.id}
+                          className="p-3 bg-white rounded-lg border border-gray-200"
+                        >
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <p className="text-xs text-gray-800 flex-1">{goal.description}</p>
+                            <p className="text-xs text-gray-800 flex-1">
+                              {goal.description}
+                            </p>
                             <StatusBadge status={goal.status} />
                           </div>
                           {goal.targetDate && (
                             <p className="text-xs text-gray-400">
-                              Target: {format(parseISO(goal.targetDate), "MMM d, yyyy")}
+                              Target:{" "}
+                              {format(parseISO(goal.targetDate), "MMM d, yyyy")}
                             </p>
                           )}
                         </div>
@@ -396,7 +456,9 @@ export function PatientDetailPage() {
             <>
               {/* Continuum stage pipeline */}
               <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <h3 className="font-semibold text-gray-900 mb-4">Care Continuum</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">
+                  Care Continuum
+                </h3>
                 <div className="flex items-center gap-0 overflow-x-auto pb-2">
                   {STAGES.map((stage, i) => {
                     const current = stageOrder[journey.stage];
@@ -404,17 +466,26 @@ export function PatientDetailPage() {
                     const isDone = stageOrder[stage.key] < current;
                     const isFuture = stageOrder[stage.key] > current;
                     return (
-                      <div key={stage.key} className="flex items-center flex-shrink-0">
+                      <div
+                        key={stage.key}
+                        className="flex items-center flex-shrink-0"
+                      >
                         <div
                           className={`flex flex-col items-center px-3 py-2 rounded-lg min-w-[90px] ${isActive ? "bg-blue-600 text-white" : isDone ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-400"}`}
                         >
                           <div
                             className={`h-5 w-5 rounded-full border-2 mb-1 flex items-center justify-center ${isActive ? "border-white bg-white" : isDone ? "border-green-500 bg-green-500" : "border-gray-300 bg-white"}`}
                           >
-                            {isDone && <CheckCircle className="h-3.5 w-3.5 text-white" />}
-                            {isActive && <div className="h-2 w-2 rounded-full bg-blue-600" />}
+                            {isDone && (
+                              <CheckCircle className="h-3.5 w-3.5 text-white" />
+                            )}
+                            {isActive && (
+                              <div className="h-2 w-2 rounded-full bg-blue-600" />
+                            )}
                           </div>
-                          <span className={`text-xs font-medium text-center leading-tight ${isFuture ? "text-gray-400" : ""}`}>
+                          <span
+                            className={`text-xs font-medium text-center leading-tight ${isFuture ? "text-gray-400" : ""}`}
+                          >
                             {stage.label}
                           </span>
                         </div>
@@ -432,14 +503,19 @@ export function PatientDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Adherence + next action */}
                 <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-                  <h3 className="font-semibold text-gray-900">Adherence & Next Action</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    Adherence & Next Action
+                  </h3>
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-600">Adherence Score</span>
+                      <span className="text-sm text-gray-600">
+                        Adherence Score
+                      </span>
                       <span
                         className={`text-sm font-bold ${journey.adherenceScore >= 80 ? "text-green-600" : journey.adherenceScore >= 60 ? "text-yellow-600" : journey.adherenceScore >= 40 ? "text-orange-600" : "text-red-600"}`}
                       >
-                        {journey.adherenceScore}% — {adherenceLabel(journey.adherenceScore)}
+                        {journey.adherenceScore}% —{" "}
+                        {adherenceLabel(journey.adherenceScore)}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -449,8 +525,9 @@ export function PatientDetailPage() {
                       />
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
-                      {journey.completedActivitiesLast30} of {journey.totalActivitiesLast30} activities
-                      completed in the last 30 days
+                      {journey.completedActivitiesLast30} of{" "}
+                      {journey.totalActivitiesLast30} activities completed in
+                      the last 30 days
                     </p>
                   </div>
                   <div className="pt-2 border-t border-gray-100">
@@ -458,34 +535,48 @@ export function PatientDetailPage() {
                       Next Action
                     </p>
                     <div className="flex items-start gap-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey.nextActionTeam]}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey.nextActionTeam]}`}
+                      >
                         {journey.nextActionTeam.toUpperCase()}
                       </span>
-                      <p className="text-sm text-gray-800">{journey.nextAction}</p>
+                      <p className="text-sm text-gray-800">
+                        {journey.nextAction}
+                      </p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 text-xs">
                     <div>
                       <p className="text-gray-500">Last Contact</p>
                       <p className="font-medium text-gray-900">
-                        {format(parseISO(journey.lastContactDate), "MMM d, yyyy")}
+                        {format(
+                          parseISO(journey.lastContactDate),
+                          "MMM d, yyyy",
+                        )}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Next Contact</p>
                       <p className="font-medium text-gray-900">
-                        {format(parseISO(journey.nextContactDate), "MMM d, yyyy")}
+                        {format(
+                          parseISO(journey.nextContactDate),
+                          "MMM d, yyyy",
+                        )}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Primary Team</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey.primaryTeam]}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${teamBadge[journey.primaryTeam]}`}
+                      >
                         {teamLabel[journey.primaryTeam]}
                       </span>
                     </div>
                     <div>
                       <p className="text-gray-500">Active Gaps</p>
-                      <p className={`font-bold ${patientGaps.length > 0 ? "text-red-600" : "text-green-600"}`}>
+                      <p
+                        className={`font-bold ${patientGaps.length > 0 ? "text-red-600" : "text-green-600"}`}
+                      >
                         {patientGaps.length}
                       </p>
                     </div>
@@ -495,17 +586,27 @@ export function PatientDetailPage() {
                 {/* Active care gaps */}
                 <div className="bg-white rounded-xl border border-gray-200 p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">Active Care Gaps</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      Active Care Gaps
+                    </h3>
                     {patientGaps.length > 0 && (
                       <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-                        {patientGaps.filter((g) => g.status === "critical" || g.status === "overdue").length} overdue
+                        {
+                          patientGaps.filter(
+                            (g) =>
+                              g.status === "critical" || g.status === "overdue",
+                          ).length
+                        }{" "}
+                        overdue
                       </span>
                     )}
                   </div>
                   {patientGaps.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <CheckCircle className="h-8 w-8 text-green-400 mb-2" />
-                      <p className="text-sm text-gray-500">No active care gaps</p>
+                      <p className="text-sm text-gray-500">
+                        No active care gaps
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -517,12 +618,18 @@ export function PatientDetailPage() {
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <p className="text-xs font-semibold text-gray-900">{gap.activityName}</p>
-                                <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${priorityColors[gap.priority]}`}>
+                                <p className="text-xs font-semibold text-gray-900">
+                                  {gap.activityName}
+                                </p>
+                                <span
+                                  className={`text-xs px-1.5 py-0.5 rounded font-medium ${priorityColors[gap.priority]}`}
+                                >
                                   {gap.priority}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-500 mt-0.5">{gap.protocolName}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {gap.protocolName}
+                              </p>
                             </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
                               <Clock className="h-3 w-3" />
@@ -530,7 +637,9 @@ export function PatientDetailPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${teamBadge[gap.assignedTeam]}`}>
+                            <span
+                              className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${teamBadge[gap.assignedTeam]}`}
+                            >
                               {gap.assignedTeam.toUpperCase()}
                             </span>
                             {gap.estimatedRevenue && (
@@ -550,24 +659,35 @@ export function PatientDetailPage() {
               {/* Applicable protocols */}
               {applicableProtocols.length > 0 && (
                 <div className="bg-white rounded-xl border border-gray-200 p-5">
-                  <h3 className="font-semibold text-gray-900 mb-4">Active Care Protocols</h3>
+                  <h3 className="font-semibold text-gray-900 mb-4">
+                    Active Care Protocols
+                  </h3>
                   <div className="space-y-4">
                     {applicableProtocols.map((proto) => (
                       <div key={proto.id}>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-${proto.color}-100 text-${proto.color}-700`}>
+                          <span
+                            className={`text-xs font-bold px-2 py-0.5 rounded-full bg-${proto.color}-100 text-${proto.color}-700`}
+                          >
                             {proto.name}
                           </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {proto.activities.map((act) => (
-                            <div key={act.id} className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg text-xs">
+                            <div
+                              key={act.id}
+                              className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg text-xs"
+                            >
                               <Users className="h-3.5 w-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="font-medium text-gray-800 truncate">{act.name}</p>
+                                <p className="font-medium text-gray-800 truncate">
+                                  {act.name}
+                                </p>
                                 <p className="text-gray-500">
-                                  {frequencyLabel[act.frequency as keyof typeof frequencyLabel] ?? act.frequency} ·{" "}
-                                  {act.assignedTeam.toUpperCase()}
+                                  {frequencyLabel[
+                                    act.frequency as keyof typeof frequencyLabel
+                                  ] ?? act.frequency}{" "}
+                                  · {act.assignedTeam.toUpperCase()}
                                 </p>
                                 {act.billable && act.estimatedRevenue && (
                                   <p className="text-emerald-700">

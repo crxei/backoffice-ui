@@ -132,6 +132,20 @@ export interface PatientDetailJourney {
   applicableProtocols: string[]
 }
 
+export interface PatientDetailInsurance {
+  id: string
+  payer: string
+  plan: string
+  planType?: string
+  type?: string
+  memberId: string
+  groupNumber: string
+  status?: string
+  effectiveDate?: string
+  terminationDate?: string | null
+  relationship?: string
+}
+
 export interface PatientDetail {
   id: string
   mrn: string
@@ -142,7 +156,7 @@ export interface PatientDetail {
   phone: string
   email: string
   address: { street: string; city: string; state: string; zip: string }
-  insurance: { payer: string; plan: string; memberId: string; groupNumber: string } | null
+  insurance: PatientDetailInsurance[]
   consentStatus: 'active' | 'expired' | 'missing'
   enrollmentDate: string | null
   riskLevel: 'low' | 'medium' | 'high'

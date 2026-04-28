@@ -4,6 +4,7 @@ import {
   type PatientDetailCondition,
   type PatientDetailCarePlan,
   type PatientDetailAppointment,
+  type PatientDetailInsurance,
 } from "../data/patientDetail";
 import { callOpenFn, postToOpenFn } from "./openFnClient";
 
@@ -169,6 +170,20 @@ interface ApiDetailAppointment {
   notes?: string;
 }
 
+interface ApiDetailInsurance {
+  id: string;
+  payer?: string;
+  plan?: string;
+  planType?: string;
+  type?: string;
+  memberId?: string;
+  groupNumber?: string;
+  status?: string;
+  effectiveDate?: string;
+  terminationDate?: string | null;
+  relationship?: string;
+}
+
 interface ApiDetailCareTeamMember {
   memberId: string;
   role: string;
@@ -193,6 +208,7 @@ interface ApiPatientDetailResponse {
     patient: {
       identity: ApiDetailIdentity;
       conditions?: ApiDetailCondition[];
+      insurance?: ApiDetailInsurance[];
       carePlans?: ApiDetailCarePlan[];
       appointments?: ApiDetailAppointment[];
       careTeam?: ApiDetailCareTeamMember[];
@@ -201,6 +217,22 @@ interface ApiPatientDetailResponse {
     };
   };
   meta: { state: string };
+}
+
+function mapDetailInsurance(ins: ApiDetailInsurance): PatientDetailInsurance {
+  return {
+    id: ins.id,
+    payer: ins.payer ?? "Unknown",
+    plan: ins.plan ?? "",
+    planType: ins.planType,
+    type: ins.type,
+    memberId: ins.memberId ?? "",
+    groupNumber: ins.groupNumber ?? "N/A",
+    status: ins.status,
+    effectiveDate: ins.effectiveDate,
+    terminationDate: ins.terminationDate,
+    relationship: ins.relationship,
+  };
 }
 
 function mapDetailCondition(c: ApiDetailCondition): PatientDetailCondition {
@@ -275,7 +307,7 @@ function mapApiPatientDetail(res: ApiPatientDetailResponse): PatientDetail {
       state: id.address?.state ?? "",
       zip: id.address?.zip ?? "",
     },
-    insurance: null,
+    insurance: (p.insurance ?? []).map(mapDetailInsurance),
     consentStatus: "active",
     enrollmentDate: null,
     riskLevel: "low",
