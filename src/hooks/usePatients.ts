@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchPatients, fetchPatientById, createPatient, updatePatient } from '../api/patients'
+import { fetchPatients, fetchPatientById, fetchPatientDetail, createPatient, updatePatient } from '../api/patients'
 import { type Patient } from '../data/patients'
 
 export function usePatients() {
@@ -8,6 +8,10 @@ export function usePatients() {
 
 export function usePatient(id: string) {
   return useQuery({ queryKey: ['patients', id], queryFn: () => fetchPatientById(id), enabled: !!id })
+}
+
+export function usePatientDetail(id: string) {
+  return useQuery({ queryKey: ['patient-detail', id], queryFn: () => fetchPatientDetail(id), enabled: !!id })
 }
 
 export function useCreatePatient() {
