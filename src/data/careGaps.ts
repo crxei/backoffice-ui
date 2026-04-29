@@ -23,6 +23,24 @@ export interface CareGap {
   resolvedAt?: string;
 }
 
+export interface CareGapListItem {
+  id: string
+  carePlanId: string
+  patient: { id: string; name: string; mrn: string }
+  owner: { id?: string; name: string }
+  assignedTeamType: 'pac' | 'chw' | 'doctor'
+  priority: 'stat' | 'urgent' | 'asap' | 'routine'
+  status: 'in-progress' | 'requested'
+  description: string
+  protocolName: string
+  dueDate: string
+  daysOverdue: number
+  estimatedRevenue: number
+  revenueCode: string
+  outreachAttempts: number
+  lastUpdated: string
+}
+
 export const careGaps: CareGap[] = [
   // P-001 Eleanor Voss — Diabetes/CKD, Elderly (74), Hypertension
   {
