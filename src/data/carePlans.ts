@@ -27,6 +27,56 @@ export interface CarePlan {
   notes: string
 }
 
+export interface CarePlanListItem {
+  id: string
+  title: string
+  status: 'draft' | 'pending_approval' | 'active' | 'completed' | 'archived'
+  patient: { id: string; name: string; mrn: string }
+  clinician: { id?: string; name: string }
+  createdDate: string
+  targetDate?: string
+  lastUpdated: string
+  goalsProgress: { total: number; achieved: number; inProgress: number; overdue: number }
+}
+
+export type CarePlanStatus = 'draft' | 'pending_approval' | 'active' | 'completed' | 'archived'
+
+export interface CarePlanDetailGoal {
+  id: string
+  description: string
+  achievementStatus: string   // FHIR: "improving" | "achieved" | "worsening" | etc.
+  dueDate: string
+  baselineValue?: number
+  targetValue?: number
+  targetComparator?: string
+  targetUnit?: string
+}
+
+export interface CarePlanDetailActivity {
+  id: string
+  display: string
+  category: string
+  assignedTeamType: string
+  authoredOn?: string
+  cptCode?: string
+  loincCode?: string
+  frequency?: { period: number; periodUnit: string }
+  status: string
+}
+
+export interface CarePlanDetail {
+  id: string
+  title: string
+  status: CarePlanStatus
+  intent?: string
+  consentObtained?: boolean
+  period?: { start: string; end?: string }
+  author: { id?: string; name: string }
+  goals: CarePlanDetailGoal[]
+  activities: CarePlanDetailActivity[]
+  addressedConditions: Array<{ reference: string }>
+}
+
 export const carePlans: CarePlan[] = [
   {
     id: 'CP-001',
