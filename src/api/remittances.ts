@@ -1,98 +1,166 @@
 import {
-  remittanceImports,
-  remittanceLines,
-  providerSummary,
-  missingRates,
   type RemittanceImport,
+  type RemittanceImportStatus,
   type RemittanceLine,
   type ProviderSummaryRow,
   type MissingRate,
   type UploadRemittanceResponse,
-  type RemittanceImportStatus,
 } from '../data/remittance'
+import { middlewareGet, middlewarePost, middlewareUpload } from './middlewareClient'
 
-const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+interface ApiImport {
+  id: string
+  status: string
+  originalFileName: string
+  created: string
+  updated: string
+  totalRows: number
+  paidRows: number
+  deniedRows: number
+  payableRows: number
+  extractedAmountPaid: string
+  expectedClaimPaymentAmount: string
+  amountPaidDifference: string
+  passedAmountPaid: boolean
+  passedAmountBilled: boolean
+  remittanceAdviceNumber?: string
+  remitDate?: string
+  fileHash?: string
+}
 
-let importsStore = [...remittanceImports]
+interface ImportsPage {
+  page: number
+  total: number
+  pageSize: number
+  imports: ApiImport[]
+}
+
+function mapApiImport(r: ApiImport): RemittanceImport {
+  return {
+    id: r.id,
+    status: r.status as RemittanceImportStatus,
+    filename: r.originalFileName,
+    createdAt: r.created,
+    updatedAt: r.updated,
+    duplicate: false,
+    summary: {
+      totalRows: r.totalRows,
+      paidRows: r.paidRows,
+      deniedRows: r.deniedRows,
+      payableRows: r.payableRows,
+      extractedAmountPaid: parseFloat(r.extractedAmountPaid),
+      expectedClaimPaymentAmount: parseFloat(r.expectedClaimPaymentAmount),
+      amountPaidDifference: parseFloat(r.amountPaidDifference),
+      passedAmountPaid: r.passedAmountPaid,
+      passedAmountBilled: r.passedAmountBilled,
+    },
+  }
+}
 
 export async function fetchImports(): Promise<RemittanceImport[]> {
-  await delay(300)
-  return [...importsStore]
+  const data = await middlewareGet<ImportsPage>('/api/imports')
+  return (data.imports ?? []).map(mapApiImport)
 }
 
 export async function fetchImport(importId: string): Promise<RemittanceImport> {
-  await delay(250)
-  const found = importsStore.find((i) => i.id === importId)
-  if (!found) throw new Error(`Import ${importId} not found`)
-  return { ...found }
+  const data = await middlewareGet<ApiImport>(`/api/imports/${importId}`)
+  return mapApiImport(data)
 }
 
 export async function uploadRemittance(formData: FormData): Promise<UploadRemittanceResponse> {
-  await delay(1200)
-  const notes = formData.get('notes') as string | null
-  const newId = `IMP-${String(importsStore.length + 1).padStart(3, '0')}`
-  const now = new Date().toISOString()
-  const newImport: RemittanceImport = {
-    id: newId,
-    status: 'READY_FOR_REVIEW',
-    filename: (formData.get('file') as File)?.name ?? 'upload.pdf',
-    notes: notes ?? undefined,
-    createdAt: now,
-    updatedAt: now,
-    duplicate: false,
-    summary: {
-      totalRows: 140,
-      paidRows: 115,
-      deniedRows: 25,
-      payableRows: 112,
-      expectedClaimPaymentAmount: 47000,
-      extractedAmountPaid: 47000,
-      amountPaidDifference: 0,
-      passedAmountPaid: true,
-      passedAmountBilled: true,
-    },
-  }
-  importsStore = [...importsStore, newImport]
+  return middlewareUpload<UploadRemittanceResponse>('/api/imports', formData)
+}
+
+interface ApiRemittanceLine {
+  id: string
+  importId: string
+  claimId: string
+  memberName: string
+  serviceProviderId: string
+  serviceProviderName: string
+  serviceDateFrom: string
+  serviceCode: string
+  units: number
+  amountBilled: string
+  amountPaid: string
+  lineStatus: string
+  reason?: string
+  remarkCode?: string
+}
+
+interface RemittanceLinesPage {
+  page: number
+  total: number
+  pageSize: number
+  remittances: ApiRemittanceLine[]
+}
+
+function mapApiLine(r: ApiRemittanceLine): RemittanceLine {
   return {
-    duplicate: false,
-    importId: newId,
-    status: 'READY_FOR_REVIEW',
-    summary: newImport.summary,
+    id: r.id,
+    importId: r.importId,
+    tcn: r.claimId,
+    patientName: r.memberName,
+    serviceProviderId: r.serviceProviderId,
+    serviceProviderName: r.serviceProviderName,
+    dateOfService: r.serviceDateFrom,
+    serviceCode: r.serviceCode,
+    modifiers: '',
+    units: r.units,
+    amountBilled: parseFloat(r.amountBilled),
+    amountPaid: parseFloat(r.amountPaid),
+    status: r.lineStatus === 'DENY' ? 'DENY' : 'PAID',
+    eobCode: r.remarkCode,
+    eobReason: r.reason,
   }
 }
 
 export async function fetchImportLines(importId: string): Promise<RemittanceLine[]> {
-  await delay(300)
-  return remittanceLines.filter((l) => l.importId === importId)
+  const first = await middlewareGet<RemittanceLinesPage>(
+    `/api/remittances?filter=importId:eq:${importId}&pageSize=100`,
+  )
+  const allLines = [...first.remittances]
+  const totalPages = Math.ceil(first.total / first.pageSize)
+  for (let page = 2; page <= totalPages; page++) {
+    const next = await middlewareGet<RemittanceLinesPage>(
+      `/api/remittances?filter=importId:eq:${importId}&pageSize=100&page=${page}`,
+    )
+    allLines.push(...next.remittances)
+  }
+  return allLines.map(mapApiLine)
 }
 
 export async function fetchProviderSummary(importId: string): Promise<ProviderSummaryRow[]> {
-  await delay(300)
-  void importId
-  return [...providerSummary]
+  return middlewareGet<ProviderSummaryRow[]>(`/api/imports/${importId}/provider-summary`)
 }
 
-export async function fetchMissingRates(importId: string): Promise<MissingRate[]> {
-  await delay(300)
-  void importId
-  return [...missingRates]
+interface FlaggedRatesPage {
+  page: number
+  total: number
+  pageSize: number
+  rates: MissingRate[]
 }
 
-async function updateImportStatus(importId: string, status: RemittanceImportStatus): Promise<RemittanceImport> {
-  await delay(400)
-  const idx = importsStore.findIndex((i) => i.id === importId)
-  if (idx === -1) throw new Error(`Import ${importId} not found`)
-  const updated = { ...importsStore[idx], status, updatedAt: new Date().toISOString() }
-  importsStore = importsStore.map((i) => (i.id === importId ? updated : i))
-  return updated
+export async function fetchMissingRates(_importId: string): Promise<MissingRate[]> {
+  const data = await middlewareGet<FlaggedRatesPage>('/api/rates?filter=flagged:eq:true')
+  return data.rates ?? []
 }
-
-export const approveImport = (importId: string) => updateImportStatus(importId, 'APPROVED')
-export const markExported = (importId: string) => updateImportStatus(importId, 'EXPORTED')
-export const markPaid = (importId: string) => updateImportStatus(importId, 'PAID')
 
 export async function recomputePayments(importId: string): Promise<{ success: boolean }> {
-  await delay(800)
-  void importId
-  return { success: true }
+  return middlewarePost<{ success: boolean }>(`/api/imports/${importId}/recompute-payments`, {})
+}
+
+export async function approveImport(importId: string): Promise<RemittanceImport> {
+  const data = await middlewarePost<ApiImport>(`/api/imports/${importId}/approve`, {})
+  return mapApiImport(data)
+}
+
+export async function markExported(importId: string): Promise<RemittanceImport> {
+  const data = await middlewarePost<ApiImport>(`/api/imports/${importId}/mark-exported`, {})
+  return mapApiImport(data)
+}
+
+export async function markPaid(importId: string): Promise<RemittanceImport> {
+  const data = await middlewarePost<ApiImport>(`/api/imports/${importId}/mark-paid`, {})
+  return mapApiImport(data)
 }

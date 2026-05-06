@@ -15,14 +15,7 @@ export function MissingRatesPage() {
   if (isLoading) return <PageLoader />
 
   const columns: Column<Record<string, unknown>>[] = [
-    { key: 'serviceProviderName', header: 'Provider', sortable: true },
-    { key: 'serviceProviderId', header: 'Provider ID' },
     { key: 'serviceCode', header: 'Service Code', sortable: true },
-    {
-      key: 'modifiers',
-      header: 'Modifiers',
-      render: (r) => <span>{(r as unknown as MissingRate).modifiers || '—'}</span>,
-    },
     { key: 'dateOfService', header: 'Date of Service', sortable: true },
     { key: 'units', header: 'Units' },
     {
@@ -35,12 +28,7 @@ export function MissingRatesPage() {
       header: '',
       render: (r) => {
         const m = r as unknown as MissingRate
-        const params = new URLSearchParams({
-          serviceProviderId: m.serviceProviderId,
-          serviceProviderName: m.serviceProviderName,
-          serviceCode: m.serviceCode,
-          modifiers: m.modifiers,
-        })
+        const params = new URLSearchParams({ serviceCode: m.serviceCode })
         return (
           <Link
             to={`/rates/new?${params}`}

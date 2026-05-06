@@ -50,10 +50,32 @@ export function RemittanceImportDetailPage() {
     { key: 'patientName', header: 'Patient', sortable: true },
     { key: 'serviceProviderName', header: 'Provider' },
     { key: 'serviceCode', header: 'Code' },
-    { key: 'modifiers', header: 'Mod', render: (r) => <span>{(r as unknown as RemittanceLine).modifiers || '—'}</span> },
-    { key: 'dateOfService', header: 'DOS', sortable: true, render: (r) => format(parseISO((r as unknown as RemittanceLine).dateOfService), 'MM/dd/yy') },
+    {
+      key: 'dateOfService',
+      header: 'DOS',
+      sortable: true,
+      render: (r) => {
+        const dos = (r as unknown as RemittanceLine).dateOfService
+        return dos ? format(parseISO(dos), 'MM/dd/yy') : '—'
+      },
+    },
     { key: 'units', header: 'Units', sortable: true },
-    { key: 'amountPaid', header: 'Paid', render: (r) => `$${((r as unknown as RemittanceLine).amountPaid).toLocaleString()}` },
+    {
+      key: 'amountBilled',
+      header: 'Billed',
+      render: (r) => {
+        const val = (r as unknown as RemittanceLine).amountBilled
+        return val != null ? `$${Number(val).toLocaleString()}` : '—'
+      },
+    },
+    {
+      key: 'amountPaid',
+      header: 'Paid',
+      render: (r) => {
+        const val = (r as unknown as RemittanceLine).amountPaid
+        return val != null ? `$${Number(val).toLocaleString()}` : '—'
+      },
+    },
     {
       key: 'status',
       header: 'Status',

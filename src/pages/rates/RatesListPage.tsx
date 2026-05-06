@@ -6,66 +6,55 @@ import { PageHeader } from '../../components/shared/PageHeader'
 import { DataTable, type Column } from '../../components/shared/DataTable'
 import { StatusBadge } from '../../components/shared/StatusBadge'
 import { PageLoader } from '../../components/shared/LoadingSpinner'
-import { type ProviderRate, type RateType } from '../../data/rates'
+import { type ProviderRate, type RateEntityType } from '../../data/rates'
 
-const RATE_TYPE_LABELS: Record<RateType, string> = {
-  PER_UNIT: 'Per Unit',
-  PER_HOUR: 'Per Hour',
-  PERCENT_OF_PAID: '% of Paid',
-  FLAT: 'Flat',
+const ENTITY_TYPE_LABELS: Record<RateEntityType, string> = {
+  COMPANY: 'Company',
+  AGENT: 'Agent',
+}
+
+const ENTITY_TYPE_BADGE: Record<RateEntityType, string> = {
+  COMPANY: 'bg-purple-100 text-purple-700',
+  AGENT: 'bg-blue-100 text-blue-700',
 }
 
 export function RatesListPage() {
   const navigate = useNavigate()
   const [activeOnly, setActiveOnly] = useState(false)
-  const [rateTypeFilter, setRateTypeFilter] = useState('')
+  const [entityTypeFilter, setEntityTypeFilter] = useState<RateEntityType | ''>('')
   const { data: rates, isLoading } = useRates(activeOnly ? { active: true } : undefined)
   const { mutate: deleteRate, isPending: deleting } = useDeleteRate()
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   if (isLoading) return <PageLoader />
 
-  const filtered = rateTypeFilter
-    ? (rates ?? []).filter((r) => r.rateType === rateTypeFilter)
+  const filtered = entityTypeFilter
+    ? (rates ?? []).filter((r) => r.type === entityTypeFilter)
     : (rates ?? [])
 
-  function formatRate(r: ProviderRate) {
-    if (r.rateType === 'PERCENT_OF_PAID') return `${r.rate}%`
-    return `$${r.rate.toFixed(2)}`
-  }
-
   const columns: Column<Record<string, unknown>>[] = [
-    { key: 'serviceProviderName', header: 'Provider', sortable: true },
-    { key: 'serviceProviderId', header: 'Provider ID' },
+    { key: 'name', header: 'Name', sortable: true },
     { key: 'serviceCode', header: 'Service Code', sortable: true },
     {
-      key: 'modifiers',
-      header: 'Modifiers',
-      render: (r) => <span>{(r as unknown as ProviderRate).modifiers || '—'}</span>,
-    },
-    {
-      key: 'rateType',
-      header: 'Rate Type',
+      key: 'type',
+      header: 'Type',
       sortable: true,
-      render: (r) => (
-        <span className="text-sm">{RATE_TYPE_LABELS[(r as unknown as ProviderRate).rateType]}</span>
-      ),
+      render: (r) => {
+        const rate = r as unknown as ProviderRate
+        return (
+          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ENTITY_TYPE_BADGE[rate.type]}`}>
+            {ENTITY_TYPE_LABELS[rate.type]}
+          </span>
+        )
+      },
     },
     {
       key: 'rate',
       header: 'Rate',
       sortable: true,
-      render: (r) => <span className="font-medium">{formatRate(r as unknown as ProviderRate)}</span>,
-    },
-    {
-      key: 'effectiveFrom',
-      header: 'Effective From',
-      sortable: true,
-    },
-    {
-      key: 'effectiveTo',
-      header: 'Effective To',
-      render: (r) => <span>{(r as unknown as ProviderRate).effectiveTo ?? '—'}</span>,
+      render: (r) => (
+        <span className="font-medium">${(r as unknown as ProviderRate).rate.toFixed(2)}</span>
+      ),
     },
     {
       key: 'active',
@@ -123,12 +112,12 @@ export function RatesListPage() {
         extraFilters={
           <div className="flex items-center gap-3">
             <select
-              value={rateTypeFilter}
-              onChange={(e) => setRateTypeFilter(e.target.value)}
+              value={entityTypeFilter}
+              onChange={(e) => setEntityTypeFilter(e.target.value as RateEntityType | '')}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Rate Types</option>
-              {Object.entries(RATE_TYPE_LABELS).map(([value, label]) => (
+              <option value="">All Types</option>
+              {(Object.entries(ENTITY_TYPE_LABELS) as [RateEntityType, string][]).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
@@ -146,7 +135,6 @@ export function RatesListPage() {
         onRowClick={(r) => navigate(`/rates/${(r as unknown as ProviderRate).id}/edit`)}
       />
 
-      {/* Delete confirmation */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full mx-4">
