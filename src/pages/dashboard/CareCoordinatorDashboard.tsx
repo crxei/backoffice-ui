@@ -1,101 +1,161 @@
-import { format, parseISO, differenceInHours } from 'date-fns'
-import { Calendar, Bell, ClipboardList, FileCheck, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { useAppointments } from '../../hooks/useAppointments'
-import { useNotifications } from '../../hooks/useNotifications'
-import { useCarePlans } from '../../hooks/useCarePlans'
-import { useReferrals } from '../../hooks/useReferrals'
-import { usePatients } from '../../hooks/usePatients'
-import { useCareGaps } from '../../hooks/useCareGaps'
-import { StatCard } from '../../components/shared/StatCard'
-import { StatusBadge } from '../../components/shared/StatusBadge'
-import { PageLoader } from '../../components/shared/LoadingSpinner'
-import { toast } from '../../components/shared/Toast'
-import { useRetryNotification } from '../../hooks/useNotifications'
+import { format, parseISO, differenceInHours } from "date-fns";
+import {
+  Calendar,
+  Bell,
+  ClipboardList,
+  FileCheck,
+  RefreshCw,
+  ArrowRight,
+  AlertTriangle,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAppointments } from "../../hooks/useAppointments";
+import { useNotifications } from "../../hooks/useNotifications";
+import { useCarePlans } from "../../hooks/useCarePlans";
+import { useReferrals } from "../../hooks/useReferrals";
+import { usePatients } from "../../hooks/usePatients";
+import { useCareGaps } from "../../hooks/useCareGaps";
+import { StatCard } from "../../components/shared/StatCard";
+import { StatusBadge } from "../../components/shared/StatusBadge";
+import { PageLoader } from "../../components/shared/LoadingSpinner";
+import { toast } from "../../components/shared/Toast";
+import { useRetryNotification } from "../../hooks/useNotifications";
 
 export function CareCoordinatorDashboard() {
-  const navigate = useNavigate()
-  const { data: appointments, isLoading: aptsLoading } = useAppointments()
-  const { data: notifications } = useNotifications()
-  const { data: carePlans } = useCarePlans()
-  const { data: referrals } = useReferrals()
-  const { data: patients } = usePatients()
-  const { data: gaps } = useCareGaps()
-  const retryMutation = useRetryNotification()
+  const navigate = useNavigate();
+  const { data: appointments, isLoading: aptsLoading } = useAppointments();
+  const { data: notifications } = useNotifications();
+  const { data: carePlans } = useCarePlans();
+  const { data: referrals } = useReferrals();
+  const { data: patients } = usePatients();
+  const { data: gaps } = useCareGaps();
+  const retryMutation = useRetryNotification();
 
-  if (aptsLoading) return <PageLoader />
+  if (aptsLoading) return <PageLoader />;
 
-  const today = new Date().toDateString()
+  const today = new Date().toDateString();
   const todayApts = (appointments ?? []).filter(
-    (a) => new Date(a.dateTime).toDateString() === today
-  )
+    (a) => new Date(a.dateTime).toDateString() === today,
+  );
   const pendingReminders = (notifications ?? []).filter(
-    (n) => n.status === 'pending' || n.status === 'failed'
-  )
-  const pendingApprovals = (carePlans ?? []).filter((cp) => cp.status === 'pending_approval')
-  const consentAlerts = (patients ?? []).filter((p) => p.consentStatus !== 'active')
-  const overdueReferrals = (referrals ?? []).filter((r) => r.status === 'overdue')
-  const criticalGaps = (gaps ?? []).filter((g) => g.status === 'critical' || g.status === 'overdue')
+    (n) => n.status === "pending" || n.status === "failed",
+  );
+  const pendingApprovals = (carePlans ?? []).filter(
+    (cp) => cp.status === "pending_approval",
+  );
+  const consentAlerts = (patients ?? []).filter(
+    (p) => p.consentStatus !== "active",
+  );
+  const overdueReferrals = (referrals ?? []).filter(
+    (r) => r.status === "overdue",
+  );
+  const criticalGaps = (gaps ?? []).filter(
+    (g) => g.priority === "stat" || g.priority === "urgent",
+  );
 
   const getAgeColor = (createdDate: string) => {
-    const hrs = differenceInHours(new Date(), parseISO(createdDate))
-    if (hrs < 24) return 'text-green-600'
-    if (hrs < 48) return 'text-amber-600'
-    return 'text-red-600'
-  }
+    const hrs = differenceInHours(new Date(), parseISO(createdDate));
+    if (hrs < 24) return "text-green-600";
+    if (hrs < 48) return "text-amber-600";
+    return "text-red-600";
+  };
 
   const getPatientName = (patientId: string) => {
-    const p = (patients ?? []).find((x) => x.id === patientId)
-    return p ? `${p.firstName} ${p.lastName}` : patientId
-  }
+    const p = (patients ?? []).find((x) => x.id === patientId);
+    return p ? `${p.firstName} ${p.lastName}` : patientId;
+  };
 
   const handleRetry = async (notifId: string) => {
     try {
-      await retryMutation.mutateAsync(notifId)
-      toast('success', 'Notification queued', 'Retry dispatched successfully')
+      await retryMutation.mutateAsync(notifId);
+      toast("success", "Notification queued", "Retry dispatched successfully");
     } catch {
-      toast('error', 'Retry failed', 'Could not resend notification')
+      toast("error", "Retry failed", "Could not resend notification");
     }
-  }
+  };
 
   const channelIcon: Record<string, string> = {
-    sms: '📱',
-    email: '📧',
-    push: '🔔',
-    teams: '💬',
-    voice_call: '📞',
-  }
+    sms: "📱",
+    email: "📧",
+    push: "🔔",
+    teams: "💬",
+    voice_call: "📞",
+  };
 
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard label="Today's Appointments" value={todayApts.length} icon={Calendar} color="blue" />
-        <StatCard label="Pending Reminders" value={pendingReminders.length} icon={Bell} color="amber" />
-        <StatCard label="Open Plan Approvals" value={pendingApprovals.length} icon={ClipboardList} color="teal" />
-        <StatCard label="Consent Alerts" value={consentAlerts.length} icon={FileCheck} color={consentAlerts.length > 0 ? 'red' : 'green'} />
-        <StatCard label="Overdue Care Gaps" value={criticalGaps.length} icon={AlertTriangle} color={criticalGaps.length > 5 ? 'red' : criticalGaps.length > 0 ? 'orange' : 'green'} />
+        <StatCard
+          label="Today's Appointments"
+          value={todayApts.length}
+          icon={Calendar}
+          color="blue"
+        />
+        <StatCard
+          label="Pending Reminders"
+          value={pendingReminders.length}
+          icon={Bell}
+          color="amber"
+        />
+        <StatCard
+          label="Open Plan Approvals"
+          value={pendingApprovals.length}
+          icon={ClipboardList}
+          color="teal"
+        />
+        <StatCard
+          label="Consent Alerts"
+          value={consentAlerts.length}
+          icon={FileCheck}
+          color={consentAlerts.length > 0 ? "red" : "green"}
+        />
+        <StatCard
+          label="Overdue Care Gaps"
+          value={criticalGaps.length}
+          icon={AlertTriangle}
+          color={
+            criticalGaps.length > 5
+              ? "red"
+              : criticalGaps.length > 0
+                ? "orange"
+                : "green"
+          }
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Today's Appointments */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Today's Appointments</h3>
-            <button onClick={() => navigate('/scheduling')} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+            <h3 className="font-semibold text-gray-900">
+              Today's Appointments
+            </h3>
+            <button
+              onClick={() => navigate("/scheduling")}
+              className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           {todayApts.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No appointments today</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No appointments today
+            </p>
           ) : (
             <div className="space-y-2">
               {todayApts.map((apt) => (
-                <div key={apt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={apt.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{getPatientName(apt.patientId)}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {getPatientName(apt.patientId)}
+                    </p>
                     <p className="text-xs text-gray-500">
-                      {format(parseISO(apt.dateTime), 'h:mm a')} · {apt.type.replace('_', ' ')}
+                      {format(parseISO(apt.dateTime), "h:mm a")} ·{" "}
+                      {apt.type.replace("_", " ")}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -117,26 +177,38 @@ export function CareCoordinatorDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Reminder Queue</h3>
-            <button onClick={() => navigate('/reminders')} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+            <button
+              onClick={() => navigate("/reminders")}
+              className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           {pendingReminders.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No pending reminders</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No pending reminders
+            </p>
           ) : (
             <div className="space-y-2">
               {pendingReminders.slice(0, 5).map((n) => (
-                <div key={n.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={n.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-base">{channelIcon[n.channel]}</span>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{getPatientName(n.patientId)}</p>
-                      <p className="text-xs text-gray-500">{n.type.replace(/_/g, ' ')}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {getPatientName(n.patientId)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {n.type.replace(/_/g, " ")}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <StatusBadge status={n.status} />
-                    {n.status === 'failed' && (
+                    {n.status === "failed" && (
                       <button
                         onClick={() => handleRetry(n.id)}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
@@ -156,23 +228,36 @@ export function CareCoordinatorDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Care Plan Approvals</h3>
-            <button onClick={() => navigate('/care-plans')} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+            <button
+              onClick={() => navigate("/care-plans")}
+              className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           {pendingApprovals.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No pending approvals</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No pending approvals
+            </p>
           ) : (
             <div className="space-y-2">
               {pendingApprovals.map((cp) => (
-                <div key={cp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={cp.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
                   <div>
-                    <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{cp.title}</p>
-                    <p className="text-xs text-gray-500">{getPatientName(cp.patientId)}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                      {cp.title}
+                    </p>
+                    <p className="text-xs text-gray-500">{cp.patient.name}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${getAgeColor(cp.createdDate)}`}>
-                      {differenceInHours(new Date(), parseISO(cp.createdDate))}h ago
+                    <span
+                      className={`text-xs font-medium ${getAgeColor(cp.createdDate)}`}
+                    >
+                      {differenceInHours(new Date(), parseISO(cp.createdDate))}h
+                      ago
                     </span>
                     <button
                       onClick={() => navigate(`/care-plans/${cp.id}`)}
@@ -190,20 +275,35 @@ export function CareCoordinatorDashboard() {
         {/* Overdue Referrals */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Referral Follow-ups Due</h3>
-            <button onClick={() => navigate('/referrals')} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+            <h3 className="font-semibold text-gray-900">
+              Referral Follow-ups Due
+            </h3>
+            <button
+              onClick={() => navigate("/referrals")}
+              className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           {overdueReferrals.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No overdue referrals</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No overdue referrals
+            </p>
           ) : (
             <div className="space-y-2">
               {overdueReferrals.map((ref) => (
-                <div key={ref.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+                <div
+                  key={ref.id}
+                  className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100"
+                >
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{getPatientName(ref.patientId)}</p>
-                    <p className="text-xs text-gray-500">{ref.specialty} · Expected {format(parseISO(ref.expectedDate), 'MMM d')}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {getPatientName(ref.patientId)}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {ref.specialty} · Expected{" "}
+                      {format(parseISO(ref.expectedDate), "MMM d")}
+                    </p>
                   </div>
                   <StatusBadge status="overdue" />
                 </div>
@@ -216,30 +316,44 @@ export function CareCoordinatorDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Critical Care Gaps</h3>
-            <button onClick={() => navigate('/care-gaps')} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+            <button
+              onClick={() => navigate("/care-gaps")}
+              className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           {criticalGaps.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No overdue gaps</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No overdue gaps
+            </p>
           ) : (
             <div className="space-y-2">
               {criticalGaps.slice(0, 5).map((gap) => (
-                <div key={gap.id} className={`flex items-start justify-between p-3 rounded-lg border ${gap.status === 'critical' ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'}`}>
+                <div
+                  key={gap.id}
+                  className={`flex items-start justify-between p-3 rounded-lg border ${gap.priority === "stat" ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-200"}`}
+                >
                   <div className="min-w-0">
                     <button
-                      onClick={() => navigate(`/patients/${gap.patientId}`)}
+                      onClick={() => navigate(`/patients/${gap.patient.id}`)}
                       className="text-sm font-medium text-blue-700 hover:underline"
                     >
-                      {gap.patientName}
+                      {gap.patient.name}
                     </button>
-                    <p className="text-xs text-gray-700 mt-0.5">{gap.activityName}</p>
-                    <p className="text-xs text-gray-500">{gap.protocolName} · Due {gap.dueDate}</p>
+                    <p className="text-xs text-gray-700 mt-0.5">
+                      {gap.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {gap.protocolName} · Due {gap.dueDate}
+                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     <StatusBadge status={gap.status} />
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${gap.assignedTeam === 'pac' ? 'bg-blue-100 text-blue-700' : gap.assignedTeam === 'chw' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700'}`}>
-                      {gap.assignedTeam.toUpperCase()}
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${gap.assignedTeamType === "pac" ? "bg-blue-100 text-blue-700" : gap.assignedTeamType === "chw" ? "bg-teal-100 text-teal-700" : "bg-purple-100 text-purple-700"}`}
+                    >
+                      {gap.assignedTeamType.toUpperCase()}
                     </span>
                   </div>
                 </div>
@@ -249,5 +363,5 @@ export function CareCoordinatorDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
