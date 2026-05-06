@@ -35,6 +35,8 @@ const statusStyles: Record<string, string> = {
   cancelled: 'bg-gray-100 text-gray-700',
   archived: 'bg-gray-100 text-gray-700',
   revoked: 'bg-gray-100 text-gray-700',
+  // Teal extended
+  exported: 'bg-teal-100 text-teal-800',
   // Red
   failed: 'bg-red-100 text-red-800',
   denied: 'bg-red-100 text-red-800',

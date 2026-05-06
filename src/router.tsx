@@ -2,6 +2,14 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { LoginPage } from './pages/auth/LoginPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
+import { RemittanceImportsListPage } from './pages/remittances/RemittanceImportsListPage'
+import { RemittanceUploadPage } from './pages/remittances/RemittanceUploadPage'
+import { RemittanceImportDetailPage } from './pages/remittances/RemittanceImportDetailPage'
+import { MissingRatesPage } from './pages/remittances/MissingRatesPage'
+import { ProviderSummaryPage } from './pages/remittances/ProviderSummaryPage'
+import { ProviderInvoicePreviewPage } from './pages/remittances/ProviderInvoicePreviewPage'
+import { RatesListPage } from './pages/rates/RatesListPage'
+import { RateFormPage } from './pages/rates/RateFormPage'
 import { PatientListPage } from './pages/patients/PatientListPage'
 import { PatientDetailPage } from './pages/patients/PatientDetailPage'
 import { PatientRegistrationPage } from './pages/patients/PatientRegistrationPage'
@@ -67,6 +75,15 @@ export const router = createBrowserRouter([
       { path: 'ringcentral', element: <RingCentralPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'admin/openfn', element: <OpenFnMonitorPage /> },
+      { path: 'remittances/imports', element: <RemittanceImportsListPage /> },
+      { path: 'remittances/imports/upload', element: <RemittanceUploadPage /> },
+      { path: 'remittances/imports/:importId', element: <RemittanceImportDetailPage /> },
+      { path: 'remittances/imports/:importId/missing-rates', element: <MissingRatesPage /> },
+      { path: 'remittances/imports/:importId/provider-summary', element: <ProviderSummaryPage /> },
+      { path: 'remittances/imports/:importId/providers/:serviceProviderId/invoice', element: <ProviderInvoicePreviewPage /> },
+      { path: 'rates', element: <RatesListPage /> },
+      { path: 'rates/new', element: <RateFormPage /> },
+      { path: 'rates/:rateId/edit', element: <RateFormPage /> },
     ],
   },
 ])

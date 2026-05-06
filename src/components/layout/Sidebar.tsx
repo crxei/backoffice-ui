@@ -23,6 +23,8 @@ import {
   ChevronRight,
   TrendingUp,
   Headphones,
+  FileSpreadsheet,
+  Settings2,
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 import { useAuthStore } from "../../store/authStore";
@@ -109,6 +111,18 @@ const navItems: NavItem[] = [
     to: "/claims",
     label: "Claims & RCM",
     icon: DollarSign,
+    roles: ["billing", "admin"],
+  },
+  {
+    to: "/remittances/imports",
+    label: "Remittances",
+    icon: FileSpreadsheet,
+    roles: ["billing", "admin"],
+  },
+  {
+    to: "/rates",
+    label: "Provider Rates",
+    icon: Settings2,
     roles: ["billing", "admin"],
   },
   {
