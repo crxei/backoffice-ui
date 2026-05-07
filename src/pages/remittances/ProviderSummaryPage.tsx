@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ChevronLeft, Eye, Download, FileText, Package } from 'lucide-react'
+import { ChevronLeft, FileText } from 'lucide-react'
 import { useProviderSummary, useImport } from '../../hooks/useRemittances'
-import { useDownloadInvoicePdf, useDownloadInvoiceCsv, useExportAllInvoices } from '../../hooks/useProviderInvoices'
+import { useDownloadInvoicePdf } from '../../hooks/useProviderInvoices'
 import { PageHeader } from '../../components/shared/PageHeader'
 import { DataTable, type Column } from '../../components/shared/DataTable'
 import { PageLoader } from '../../components/shared/LoadingSpinner'
@@ -18,8 +18,6 @@ export function ProviderSummaryPage() {
   const { data: imp } = useImport(importId!)
   const { data: summary, isLoading } = useProviderSummary(importId!)
   const { mutate: downloadPdf, isPending: pdfPending } = useDownloadInvoicePdf()
-  const { mutate: downloadCsv, isPending: csvPending } = useDownloadInvoiceCsv()
-  const { mutate: exportAll, isPending: exportingAll, data: exportJob } = useExportAllInvoices()
 
   const [paymentDate, setPaymentDate] = useState(today)
   const [paidOnDate, setPaidOnDate] = useState(nextWeek)
@@ -70,28 +68,13 @@ export function ProviderSummaryPage() {
         const params = invoiceParams(row)
         const disabled = row.missingRateCount > 0
         return (
-          <div className="flex items-center gap-2">
-            <Link
-              to={`/remittances/imports/${importId}/providers/${row.serviceProviderId}/invoice?paymentDate=${paymentDate}&paidOnDate=${paidOnDate}`}
-              className={`flex items-center gap-1 text-xs font-medium ${disabled ? 'text-gray-300 pointer-events-none' : 'text-blue-600 hover:text-blue-800'}`}
-            >
-              <Eye className="h-3.5 w-3.5" /> Preview
-            </Link>
-            <button
-              disabled={disabled || pdfPending}
-              onClick={() => downloadPdf(params)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-30"
-            >
-              <FileText className="h-3.5 w-3.5" /> PDF
-            </button>
-            <button
-              disabled={disabled || csvPending}
-              onClick={() => downloadCsv(params)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-30"
-            >
-              <Download className="h-3.5 w-3.5" /> CSV
-            </button>
-          </div>
+          <button
+            disabled={disabled || pdfPending}
+            onClick={() => downloadPdf(params)}
+            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-30"
+          >
+            <FileText className="h-3.5 w-3.5" /> PDF
+          </button>
         )
       },
     },
@@ -111,23 +94,8 @@ export function ProviderSummaryPage() {
       <PageHeader
         title="Provider Summary"
         description={imp?.filename}
-        actions={
-          <button
-            onClick={() => exportAll(importId!)}
-            disabled={exportingAll || hasMissingRates}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            <Package className="h-4 w-4" />
-            {exportingAll ? 'Queuing…' : 'Generate All Invoices'}
-          </button>
-        }
+        actions={undefined}
       />
-
-      {exportJob && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-          Export job queued (ID: {exportJob.jobId}). Your ZIP will be ready shortly.
-        </div>
-      )}
 
       {hasMissingRates && (
         <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800 flex items-center justify-between">

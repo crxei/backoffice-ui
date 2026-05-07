@@ -68,7 +68,7 @@ export async function fetchImport(importId: string): Promise<RemittanceImport> {
 }
 
 export async function uploadRemittance(formData: FormData): Promise<UploadRemittanceResponse> {
-  return middlewareUpload<UploadRemittanceResponse>('/api/imports', formData)
+  return middlewareUpload<UploadRemittanceResponse>('/api/remittances/imports', formData)
 }
 
 interface ApiRemittanceLine {
@@ -130,8 +130,51 @@ export async function fetchImportLines(importId: string): Promise<RemittanceLine
   return allLines.map(mapApiLine)
 }
 
+interface ApiProviderSummary {
+  id: string
+  importId: string
+  serviceProviderId: string
+  employeeName: string
+  teamName: string
+  totalPaidAmount: string
+  totalBilledAmount: string
+  paid: number
+  denied: number
+}
+
+interface ProviderSummaryPage {
+  page: number
+  total: number
+  pageSize: number
+  summaries: ApiProviderSummary[]
+}
+
+function parseAmount(val: string): number {
+  return parseFloat(val.replace(/[$,]/g, '')) || 0
+}
+
+function mapApiProviderSummary(r: ApiProviderSummary): ProviderSummaryRow {
+  return {
+    serviceProviderId: r.serviceProviderId,
+    serviceProviderName: r.employeeName,
+    paidLines: r.paid,
+    deniedLines: r.denied,
+    totalUnits: 0,
+    totalAmountPaid: parseAmount(r.totalPaidAmount),
+    computedProviderPayment: parseAmount(r.totalPaidAmount),
+    missingRateCount: 0,
+  }
+}
+
 export async function fetchProviderSummary(importId: string): Promise<ProviderSummaryRow[]> {
-  return middlewareGet<ProviderSummaryRow[]>(`/api/imports/${importId}/provider-summary`)
+  const first = await middlewareGet<ProviderSummaryPage>(`/api/invoices/${importId}/summary`)
+  const all = [...first.summaries]
+  const totalPages = Math.ceil(first.total / first.pageSize)
+  for (let page = 2; page <= totalPages; page++) {
+    const next = await middlewareGet<ProviderSummaryPage>(`/api/invoices/${importId}/summary?page=${page}`)
+    all.push(...next.summaries)
+  }
+  return all.map(mapApiProviderSummary)
 }
 
 interface FlaggedRatesPage {

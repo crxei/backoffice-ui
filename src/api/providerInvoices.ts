@@ -17,7 +17,7 @@ export async function fetchInvoicePreview(params: InvoiceParams): Promise<Provid
 }
 
 export async function downloadInvoicePdf(params: InvoiceParams): Promise<Blob> {
-  return middlewareDownload(`/api/provider-invoices/export.pdf?${invoiceQuery(params)}`)
+  return middlewareDownload(`/api/invoices/export.pdf?serviceProviderId=${params.serviceProviderId}`)
 }
 
 export async function downloadInvoiceCsv(params: InvoiceParams): Promise<Blob> {
