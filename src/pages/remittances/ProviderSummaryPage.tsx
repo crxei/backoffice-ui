@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ChevronLeft, FileText } from 'lucide-react'
+import { ChevronLeft, FileText, FileSpreadsheet } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { useProviderSummary, useImport } from '../../hooks/useRemittances'
 import { useDownloadInvoicePdf } from '../../hooks/useProviderInvoices'
 import { PageHeader } from '../../components/shared/PageHeader'
@@ -27,6 +28,25 @@ export function ProviderSummaryPage() {
   const totalPaid = (summary ?? []).reduce((s, r) => s + r.totalAmountPaid, 0)
   const totalComputed = (summary ?? []).reduce((s, r) => s + r.computedProviderPayment, 0)
   const hasMissingRates = (summary ?? []).some((r) => r.missingRateCount > 0)
+
+  function downloadExcel() {
+    const rows = (summary ?? []).map((r) => ({
+      'Provider': r.serviceProviderName,
+      'Provider ID': r.serviceProviderId,
+      'Paid Lines': r.paidLines,
+      'Denied Lines': r.deniedLines,
+      'Total Units': r.totalUnits,
+      'Amount Paid': r.totalAmountPaid,
+      'Provider Payment': r.computedProviderPayment,
+    }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Provider Summary')
+    const filename = imp?.filename
+      ? `provider-summary-${imp.filename.replace('.pdf', '')}.xlsx`
+      : 'provider-summary.xlsx'
+    XLSX.writeFile(wb, filename)
+  }
 
   const invoiceParams = (row: ProviderSummaryRow) => ({
     importId: importId!,
@@ -94,7 +114,16 @@ export function ProviderSummaryPage() {
       <PageHeader
         title="Provider Summary"
         description={imp?.filename}
-        actions={undefined}
+        actions={
+          <button
+            onClick={downloadExcel}
+            disabled={!summary?.length}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Download Excel
+          </button>
+        }
       />
 
       {hasMissingRates && (
