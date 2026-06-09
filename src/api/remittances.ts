@@ -5,34 +5,39 @@ import {
   type ProviderSummaryRow,
   type MissingRate,
   type UploadRemittanceResponse,
-} from '../data/remittance'
-import { middlewareGet, middlewarePost, middlewareUpload } from './middlewareClient'
+} from "../data/remittance";
+import {
+  middlewareDelete,
+  middlewareGet,
+  middlewarePost,
+  middlewareUpload,
+} from "./middlewareClient";
 
 interface ApiImport {
-  id: string
-  status: string
-  originalFileName: string
-  created: string
-  updated: string
-  totalRows: number
-  paidRows: number
-  deniedRows: number
-  payableRows: number
-  extractedAmountPaid: string
-  expectedClaimPaymentAmount: string
-  amountPaidDifference: string
-  passedAmountPaid: boolean
-  passedAmountBilled: boolean
-  remittanceAdviceNumber?: string
-  remitDate?: string
-  fileHash?: string
+  id: string;
+  status: string;
+  originalFileName: string;
+  created: string;
+  updated: string;
+  totalRows: number;
+  paidRows: number;
+  deniedRows: number;
+  payableRows: number;
+  extractedAmountPaid: string;
+  expectedClaimPaymentAmount: string;
+  amountPaidDifference: string;
+  passedAmountPaid: boolean;
+  passedAmountBilled: boolean;
+  remittanceAdviceNumber?: string;
+  remitDate?: string;
+  fileHash?: string;
 }
 
 interface ImportsPage {
-  page: number
-  total: number
-  pageSize: number
-  imports: ApiImport[]
+  page: number;
+  total: number;
+  pageSize: number;
+  imports: ApiImport[];
 }
 
 function mapApiImport(r: ApiImport): RemittanceImport {
@@ -54,45 +59,50 @@ function mapApiImport(r: ApiImport): RemittanceImport {
       passedAmountPaid: r.passedAmountPaid,
       passedAmountBilled: r.passedAmountBilled,
     },
-  }
+  };
 }
 
 export async function fetchImports(): Promise<RemittanceImport[]> {
-  const data = await middlewareGet<ImportsPage>('/api/imports')
-  return (data.imports ?? []).map(mapApiImport)
+  const data = await middlewareGet<ImportsPage>("/api/imports");
+  return (data.imports ?? []).map(mapApiImport);
 }
 
 export async function fetchImport(importId: string): Promise<RemittanceImport> {
-  const data = await middlewareGet<ApiImport>(`/api/imports/${importId}`)
-  return mapApiImport(data)
+  const data = await middlewareGet<ApiImport>(`/api/imports/${importId}`);
+  return mapApiImport(data);
 }
 
-export async function uploadRemittance(formData: FormData): Promise<UploadRemittanceResponse> {
-  return middlewareUpload<UploadRemittanceResponse>('/api/remittances/imports', formData)
+export async function uploadRemittance(
+  formData: FormData,
+): Promise<UploadRemittanceResponse> {
+  return middlewareUpload<UploadRemittanceResponse>(
+    "/api/remittances/imports",
+    formData,
+  );
 }
 
 interface ApiRemittanceLine {
-  id: string
-  importId: string
-  claimId: string
-  memberName: string
-  serviceProviderId: string
-  serviceProviderName: string
-  serviceDateFrom: string
-  serviceCode: string
-  units: number
-  amountBilled: string
-  amountPaid: string
-  lineStatus: string
-  reason?: string
-  remarkCode?: string
+  id: string;
+  importId: string;
+  claimId: string;
+  memberName: string;
+  serviceProviderId: string;
+  serviceProviderName: string;
+  serviceDateFrom: string;
+  serviceCode: string;
+  units: number;
+  amountBilled: string;
+  amountPaid: string;
+  lineStatus: string;
+  reason?: string;
+  remarkCode?: string;
 }
 
 interface RemittanceLinesPage {
-  page: number
-  total: number
-  pageSize: number
-  remittances: ApiRemittanceLine[]
+  page: number;
+  total: number;
+  pageSize: number;
+  remittances: ApiRemittanceLine[];
 }
 
 function mapApiLine(r: ApiRemittanceLine): RemittanceLine {
@@ -105,52 +115,54 @@ function mapApiLine(r: ApiRemittanceLine): RemittanceLine {
     serviceProviderName: r.serviceProviderName,
     dateOfService: r.serviceDateFrom,
     serviceCode: r.serviceCode,
-    modifiers: '',
+    modifiers: "",
     units: r.units,
     amountBilled: parseFloat(r.amountBilled),
     amountPaid: parseFloat(r.amountPaid),
-    status: r.lineStatus === 'DENY' ? 'DENY' : 'PAID',
+    status: r.lineStatus === "DENY" ? "DENY" : "PAID",
     eobCode: r.remarkCode,
     eobReason: r.reason,
-  }
+  };
 }
 
-export async function fetchImportLines(importId: string): Promise<RemittanceLine[]> {
+export async function fetchImportLines(
+  importId: string,
+): Promise<RemittanceLine[]> {
   const first = await middlewareGet<RemittanceLinesPage>(
     `/api/remittances?filter=importId:eq:${importId}&pageSize=100`,
-  )
-  const allLines = [...first.remittances]
-  const totalPages = Math.ceil(first.total / first.pageSize)
+  );
+  const allLines = [...first.remittances];
+  const totalPages = Math.ceil(first.total / first.pageSize);
   for (let page = 2; page <= totalPages; page++) {
     const next = await middlewareGet<RemittanceLinesPage>(
       `/api/remittances?filter=importId:eq:${importId}&pageSize=100&page=${page}`,
-    )
-    allLines.push(...next.remittances)
+    );
+    allLines.push(...next.remittances);
   }
-  return allLines.map(mapApiLine)
+  return allLines.map(mapApiLine);
 }
 
 interface ApiProviderSummary {
-  id: string
-  importId: string
-  serviceProviderId: string
-  employeeName: string
-  teamName: string
-  totalPaidAmount: string
-  totalBilledAmount: string
-  paid: number
-  denied: number
+  id: string;
+  importId: string;
+  serviceProviderId: string;
+  employeeName: string;
+  teamName: string;
+  totalPaidAmount: string;
+  totalBilledAmount: string;
+  paid: number;
+  denied: number;
 }
 
 interface ProviderSummaryPage {
-  page: number
-  total: number
-  pageSize: number
-  summaries: ApiProviderSummary[]
+  page: number;
+  total: number;
+  pageSize: number;
+  summaries: ApiProviderSummary[];
 }
 
 function parseAmount(val: string): number {
-  return parseFloat(val.replace(/[$,]/g, '')) || 0
+  return parseFloat(val.replace(/[$,]/g, "")) || 0;
 }
 
 function mapApiProviderSummary(r: ApiProviderSummary): ProviderSummaryRow {
@@ -163,47 +175,79 @@ function mapApiProviderSummary(r: ApiProviderSummary): ProviderSummaryRow {
     totalAmountPaid: parseAmount(r.totalPaidAmount),
     computedProviderPayment: parseAmount(r.totalPaidAmount),
     missingRateCount: 0,
-  }
+  };
 }
 
-export async function fetchProviderSummary(importId: string): Promise<ProviderSummaryRow[]> {
-  const first = await middlewareGet<ProviderSummaryPage>(`/api/invoices/${importId}/summary`)
-  const all = [...first.summaries]
-  const totalPages = Math.ceil(first.total / first.pageSize)
+export async function fetchProviderSummary(
+  importId: string,
+): Promise<ProviderSummaryRow[]> {
+  const first = await middlewareGet<ProviderSummaryPage>(
+    `/api/invoices/${importId}/summary`,
+  );
+  const all = [...first.summaries];
+  const totalPages = Math.ceil(first.total / first.pageSize);
   for (let page = 2; page <= totalPages; page++) {
-    const next = await middlewareGet<ProviderSummaryPage>(`/api/invoices/${importId}/summary?page=${page}`)
-    all.push(...next.summaries)
+    const next = await middlewareGet<ProviderSummaryPage>(
+      `/api/invoices/${importId}/summary?page=${page}`,
+    );
+    all.push(...next.summaries);
   }
-  return all.map(mapApiProviderSummary)
+  return all.map(mapApiProviderSummary);
 }
 
 interface FlaggedRatesPage {
-  page: number
-  total: number
-  pageSize: number
-  rates: MissingRate[]
+  page: number;
+  total: number;
+  pageSize: number;
+  rates: MissingRate[];
 }
 
-export async function fetchMissingRates(_importId: string): Promise<MissingRate[]> {
-  const data = await middlewareGet<FlaggedRatesPage>('/api/rates?filter=flagged:eq:true')
-  return data.rates ?? []
+export async function fetchMissingRates(
+  _importId: string,
+): Promise<MissingRate[]> {
+  const data = await middlewareGet<FlaggedRatesPage>(
+    "/api/rates?filter=flagged:eq:true",
+  );
+  return data.rates ?? [];
 }
 
-export async function recomputePayments(importId: string): Promise<{ success: boolean }> {
-  return middlewarePost<{ success: boolean }>(`/api/imports/${importId}/recompute-payments`, {})
+export async function recomputePayments(
+  importId: string,
+): Promise<{ success: boolean }> {
+  return middlewarePost<{ success: boolean }>(
+    `/api/imports/${importId}/recompute-payments`,
+    {},
+  );
 }
 
-export async function approveImport(importId: string): Promise<RemittanceImport> {
-  const data = await middlewarePost<ApiImport>(`/api/imports/${importId}/approve`, {})
-  return mapApiImport(data)
+export async function approveImport(
+  importId: string,
+): Promise<RemittanceImport> {
+  const data = await middlewarePost<ApiImport>(
+    `/api/imports/${importId}/approve`,
+    {},
+  );
+  return mapApiImport(data);
 }
 
-export async function markExported(importId: string): Promise<RemittanceImport> {
-  const data = await middlewarePost<ApiImport>(`/api/imports/${importId}/mark-exported`, {})
-  return mapApiImport(data)
+export async function markExported(
+  importId: string,
+): Promise<RemittanceImport> {
+  const data = await middlewarePost<ApiImport>(
+    `/api/imports/${importId}/mark-exported`,
+    {},
+  );
+  return mapApiImport(data);
 }
 
 export async function markPaid(importId: string): Promise<RemittanceImport> {
-  const data = await middlewarePost<ApiImport>(`/api/imports/${importId}/mark-paid`, {})
-  return mapApiImport(data)
+  const data = await middlewarePost<ApiImport>(
+    `/api/imports/${importId}/mark-paid`,
+    {},
+  );
+  return mapApiImport(data);
+}
+
+export async function deleteImport(importId: string): Promise<void> {
+  return middlewareDelete(`/api/imports/${importId}`);
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import {
@@ -12,11 +13,14 @@ import {
   useApproveImport,
   useMarkExported,
   useMarkPaid,
+  useDeleteImport,
 } from "../../hooks/useRemittances";
 import { PageHeader } from "../../components/shared/PageHeader";
 import { StatusBadge } from "../../components/shared/StatusBadge";
 import { DataTable, type Column } from "../../components/shared/DataTable";
 import { PageLoader } from "../../components/shared/LoadingSpinner";
+import { ConfirmDialog } from "../../components/shared/ConfirmDialog";
+import { toast } from "../../components/shared/Toast";
 import { type RemittanceLine } from "../../data/remittance";
 
 const importStatusMap: Record<string, string> = {
@@ -32,11 +36,13 @@ const importStatusMap: Record<string, string> = {
 export function RemittanceImportDetailPage() {
   const { importId } = useParams<{ importId: string }>();
   const navigate = useNavigate();
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { data: imp, isLoading } = useImport(importId!);
   const { data: lines, isLoading: linesLoading } = useImportLines(importId!);
   const { mutate: approve, isPending: approving } = useApproveImport();
   const { mutate: exported, isPending: exporting } = useMarkExported();
   const { mutate: paid, isPending: paying } = useMarkPaid();
+  const { mutate: removeImport, isPending: deleting } = useDeleteImport();
 
   if (isLoading) return <PageLoader />;
   if (!imp) return <div className="text-gray-500 p-6">Import not found.</div>;
@@ -140,8 +146,38 @@ export function RemittanceImportDetailPage() {
                 {paying ? "Marking…" : "Mark Paid"}
               </button>
             )}
+            <button
+              onClick={() => setIsDeleteOpen(true)}
+              disabled={deleting}
+              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting ? "Deleting…" : "Delete Import"}
+            </button>
           </div>
         }
+      />
+      <ConfirmDialog
+        isOpen={isDeleteOpen}
+        title="Delete remittance import"
+        description="This will permanently remove the remittance import and its associated records. This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={deleting}
+        onConfirm={() => {
+          removeImport(imp.id, {
+            onSuccess: () => {
+              setIsDeleteOpen(false)
+              toast('success', 'Import deleted', 'The remittance import has been removed.')
+              navigate('/remittances/imports')
+            },
+            onError: () => {
+              setIsDeleteOpen(false)
+              toast('error', 'Delete failed', 'Could not delete the remittance import.')
+            },
+          })
+        }}
+        onCancel={() => setIsDeleteOpen(false)}
       />
 
       {/* Warnings */}

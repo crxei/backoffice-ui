@@ -1,5 +1,5 @@
-const MIDDLEWARE_BASE = "https://middleware.flexcodelabs.com";
-// const MIDDLEWARE_BASE = "http://localhost:4540";
+// const MIDDLEWARE_BASE = "https://middleware.flexcodelabs.com";
+const MIDDLEWARE_BASE = "http://localhost:4540";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${MIDDLEWARE_BASE}${path}`, {
@@ -10,6 +10,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(
       `Middleware ${init?.method ?? "GET"} ${path} failed: ${res.status} ${res.statusText}`,
     );
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (res.status === 204 || !contentType.includes("application/json")) {
+    return undefined as unknown as T;
+  }
+
   return res.json() as Promise<T>;
 }
 
