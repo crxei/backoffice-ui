@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ChevronLeft, FileText, FileSpreadsheet } from 'lucide-react'
-import * as XLSX from 'xlsx'
+import { ChevronLeft, FileText, FileSpreadsheet, Loader2 } from 'lucide-react'
 import { useProviderSummary, useImport } from '../../hooks/useRemittances'
-import { useDownloadInvoicePdf } from '../../hooks/useProviderInvoices'
+import { useDownloadInvoicePdf, useDownloadSummaryExcel } from '../../hooks/useProviderInvoices'
 import { PageHeader } from '../../components/shared/PageHeader'
 import { DataTable, type Column } from '../../components/shared/DataTable'
 import { PageLoader } from '../../components/shared/LoadingSpinner'
@@ -19,6 +18,7 @@ export function ProviderSummaryPage() {
   const { data: imp } = useImport(importId!)
   const { data: summary, isLoading } = useProviderSummary(importId!)
   const { mutate: downloadPdf, isPending: pdfPending } = useDownloadInvoicePdf()
+  const { mutate: downloadSummaryExcel, isPending: excelPending } = useDownloadSummaryExcel()
 
   const [paymentDate, setPaymentDate] = useState(today)
   const [paidOnDate, setPaidOnDate] = useState(nextWeek)
@@ -30,22 +30,8 @@ export function ProviderSummaryPage() {
   const hasMissingRates = (summary ?? []).some((r) => r.missingRateCount > 0)
 
   function downloadExcel() {
-    const rows = (summary ?? []).map((r) => ({
-      'Provider': r.serviceProviderName,
-      'Provider ID': r.serviceProviderId,
-      'Paid Lines': r.paidLines,
-      'Denied Lines': r.deniedLines,
-      'Total Units': r.totalUnits,
-      'Amount Paid': r.totalAmountPaid,
-      'Provider Payment': r.computedProviderPayment,
-    }))
-    const ws = XLSX.utils.json_to_sheet(rows)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Provider Summary')
-    const filename = imp?.filename
-      ? `provider-summary-${imp.filename.replace('.pdf', '')}.xlsx`
-      : 'provider-summary.xlsx'
-    XLSX.writeFile(wb, filename)
+    if (!importId) return
+    downloadSummaryExcel(importId)
   }
 
   const invoiceParams = (row: ProviderSummaryRow) => ({
@@ -93,7 +79,12 @@ export function ProviderSummaryPage() {
             onClick={() => downloadPdf(params)}
             className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-30"
           >
-            <FileText className="h-3.5 w-3.5" /> PDF
+            {pdfPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileText className="h-3.5 w-3.5" />
+            )}
+            {pdfPending ? 'Downloading…' : 'PDF'}
           </button>
         )
       },
@@ -117,11 +108,15 @@ export function ProviderSummaryPage() {
         actions={
           <button
             onClick={downloadExcel}
-            disabled={!summary?.length}
+            disabled={summary == null || excelPending}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
           >
-            <FileSpreadsheet className="h-4 w-4" />
-            Download Excel
+            {excelPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4" />
+            )}
+            {excelPending ? 'Downloading…' : 'Download Excel'}
           </button>
         }
       />

@@ -14,6 +14,7 @@ const rateSchema = z.object({
   serviceCode: z.string().min(1, "Service code is required"),
   type: z.enum(["COMPANY", "AGENT"] as const),
   rate: z.number().min(0, "Rate must be 0 or greater"),
+  unitsPerHour: z.number().min(1, "Units per hour must be 1 or greater"),
   active: z.boolean(),
 });
 
@@ -46,6 +47,7 @@ export function RateFormPage() {
       serviceCode: searchParams.get("serviceCode") ?? "",
       type: "AGENT",
       rate: 0,
+      unitsPerHour: 1,
       active: true,
     },
   });
@@ -57,6 +59,7 @@ export function RateFormPage() {
         serviceCode: existing.serviceCode,
         type: existing.type,
         rate: existing.rate,
+        unitsPerHour: existing.unitsPerHour ?? 1,
         active: existing.active,
       });
     }
@@ -132,7 +135,7 @@ export function RateFormPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Type *
@@ -162,6 +165,22 @@ export function RateFormPage() {
               />
               {errors.rate && (
                 <p className="text-xs text-red-600 mt-1">{errors.rate.message}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Units per hour *
+              </label>
+              <input
+                {...register("unitsPerHour", { valueAsNumber: true })}
+                type="number"
+                step="0.01"
+                min="1"
+                placeholder="1"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {errors.unitsPerHour && (
+                <p className="text-xs text-red-600 mt-1">{errors.unitsPerHour.message}</p>
               )}
             </div>
           </div>

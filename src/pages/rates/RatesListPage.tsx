@@ -57,6 +57,14 @@ export function RatesListPage() {
       ),
     },
     {
+      key: 'unitsPerHour',
+      header: 'Units / hour',
+      sortable: true,
+      render: (r) => (
+        <span className="font-medium">{(r as unknown as ProviderRate).unitsPerHour.toFixed(2)}</span>
+      ),
+    },
+    {
       key: 'active',
       header: 'Active',
       render: (r) => (
